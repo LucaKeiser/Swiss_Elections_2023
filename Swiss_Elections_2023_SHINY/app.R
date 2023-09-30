@@ -80,13 +80,14 @@ ui <- fluidPage(
                   selected = NULL),
       
       actionButton(inputId = "action_button",
-                   label = "Ergebnisse anzeigen!"),
+                   label = "ERGEBNISSE ANZEIGEN!"),
       
       br(),
       br(),
       
       p(strong("Hinweis 1:"), "Damit Politiker*innen im Dropdown-Menü angezeigt werden, wählen Sie bitte zuerst die entsprechende(n) Partei(en) aus.", br(),
-        strong("Hinweis 2:"), "Wird nichts angewählt und auf 'Ergebnisse anzeigen!' geklickt, werden alle 120 Personen im Datensatz dargestellt."),
+        strong("Hinweis 2:"), "Wird nichts angewählt und auf 'ERGEBNISSE ANZEIGEN!' geklickt, werden alle 120 Personen im Datensatz dargestellt.", br(),
+        strong("Hinweis 3:"), "Verwenden Sie bei der Benutzung mit dem Mobiltelefon bitte das Querformat.")
       
     ),
     
@@ -101,10 +102,12 @@ ui <- fluidPage(
       tabPanel(title = "Grafiken",
                br(),
                plotOutput("plot_1",
-                          height = "1750px"),
+                          height = "1750px",
+                          width = "75%"),
                hr(),
                plotOutput("plot_2",
-                          height = "1750px"),
+                          height = "1750px",
+                          width = "75%"),
                hr()),
       
       # data info
@@ -209,12 +212,12 @@ server <- function(input, output, session) {
       scale_x_continuous(labels = comma_format(big.mark = "`"),
                          breaks = seq(0, 400000, 50000)) + 
       scale_fill_manual(values = party_colors) +
-      labs(title = "\nWelche Einzelperson hat am meisten Geld für die jeweilige Wahlkampagne zur Verfügung?\n",
+      labs(title = "\nWelche Einzelperson hat am meisten Geld für die\njeweilige Wahlkampagne zur Verfügung?\n",
            fill = "Partei:",
            x = "\nMenge an zur Verfügung stehendem Geld in CHF\n",
            y = "") +
       theme(legend.position = "top",
-            text = element_text(size = 18))
+            text = element_text(size = 15))
     
   })
   
@@ -228,14 +231,14 @@ server <- function(input, output, session) {
       geom_col(color = "white") +
       scale_x_continuous(labels = percent_format()) + 
       scale_fill_manual(values = money_colors) +
-      labs(title = "\nWie setzt sich das Geld für die Wahlkampagne zusammen?\n",
+      labs(title = "\nWie setzt sich das Geld für die\nWahlkampagne zusammen?\n",
            x = "",
            y = "",
            fill = "") +
       theme(legend.position = "top",
-            text = element_text(size = 18)) +
+            text = element_text(size = 15)) +
       guides(fill = guide_legend(reverse = TRUE,
-                                 ncol = 2))
+                                 ncol = 1))
     
   })
   
