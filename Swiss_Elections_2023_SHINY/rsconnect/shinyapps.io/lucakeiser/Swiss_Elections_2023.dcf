@@ -1,0 +1,12 @@
+name: Swiss_Elections_2023
+title: Swiss_Elections_2023
+username: lucakeiser
+account: lucakeiser
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 10041470
+bundleId: 7746654
+url: https://lucakeiser.shinyapps.io/Swiss_Elections_2023/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

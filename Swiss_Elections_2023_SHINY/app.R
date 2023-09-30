@@ -12,7 +12,7 @@ theme_set(theme_minimal())
 
 # data
 elections_2023_single_politicians <- read_rds(here::here("swiss_elections_2023.rds")) %>% 
-  filter(kampagne_fur == "Einzelperson") %>% 
+  filter(kampagne_fur == "Wahlkampagnenbudget - Einzelperson") %>% 
   mutate(name_choices = paste(glue("{name} ({partei_kurz})")))
 
 # get the right party color
@@ -106,9 +106,11 @@ ui <- fluidPage(
       # plots
       tabPanel(title = "Grafiken",
                br(),
-               plotOutput("plot_1"),
+               plotOutput("plot_1",
+                          height = "800px"),
                hr(),
-               plotOutput("plot_2"),
+               plotOutput("plot_2",
+                          height = "800px"),
                hr()),
       
       # data info
@@ -183,8 +185,6 @@ server <- function(input, output, session) {
     
     elections_2023_single_politicians_reactive() %>%
       mutate(name = fct_reorder(name, einnahmen_total)) %>%
-      top_n(einnahmen_total, 
-            n = 50) %>% 
       ggplot(aes(einnahmen_total, name)) + 
       geom_col(aes(fill = partei_kurz)) + 
       geom_vline(xintercept = median(elections_2023_single_politicians$einnahmen_total),
@@ -196,16 +196,16 @@ server <- function(input, output, session) {
                  linewidth = 1.1,
                  alpha = 0.5) + 
       annotate(geom = "label",
-               x = median(elections_2023_single_politicians$einnahmen_total), 
-               y = ifelse(length(input$politician_name > 0), 
-                          length(input$politician_name) + 0.5, 
-                          47.5),
-               label = glue("Median:\n{format(median(elections_2023_single_politicians$einnahmen_total), big.mark = '`')} CHF")) +
-      annotate(geom = "label",
-               x = mean(elections_2023_single_politicians$einnahmen_total), 
+               x = median(elections_2023_single_politicians$einnahmen_total) - 3000, 
                y = ifelse(length(input$politician_name > 0), 
                           length(input$politician_name), 
-                          40),
+                          70),
+               label = glue("Median:\n{format(median(elections_2023_single_politicians$einnahmen_total), big.mark = '`')} CHF")) +
+      annotate(geom = "label",
+               x = mean(elections_2023_single_politicians$einnahmen_total) + 3000, 
+               y = ifelse(length(input$politician_name > 0), 
+                          length(input$politician_name), 
+                          50),
                label = glue("Durchschnitt:\n{format(round(mean(elections_2023_single_politicians$einnahmen_total), 2), big.mark = '`')} CHF")) +
       scale_x_continuous(labels = comma_format(big.mark = "`"),
                          breaks = seq(0, 400000, 50000)) + 
@@ -221,6 +221,7 @@ server <- function(input, output, session) {
   output$plot_2 <- renderPlot({
     
     elections_2023_single_politicians_plot_2() %>% 
+      mutate(name = fct_reorder(name, einnahmen_total)) %>%
       ggplot(aes(pct_values, name,
                  fill = pct_variables)) + 
       geom_col(color = "white") +
