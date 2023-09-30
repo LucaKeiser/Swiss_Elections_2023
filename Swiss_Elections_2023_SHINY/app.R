@@ -12,10 +12,10 @@ theme_set(theme_minimal())
 
 # data
 elections_2023_single_politicians <- read_rds(here::here("swiss_elections_2023.rds")) %>% 
-  filter(kampagne_fur == "Wahlkampagnenbudget - Einzelperson") %>% 
+  filter(kampagne_fur == "Einzelperson") %>% 
   mutate(name_choices = paste(glue("{name} ({partei_kurz})")))
 
-# get the right party color
+# get party color
 party_colors <- c(SVP = "#00A04F",
                   SP = "#E40326",
                   FDP = "#104FA0",
@@ -47,14 +47,14 @@ ui <- fluidPage(
   
   
   ### select a theme
-  theme = shinytheme("sandstone"),
+  theme = shinytheme("simplex"),
   
   
   ### Application title
   br(),
   br(),
   
-  titlePanel(p(strong("Nationalratswahlen Schweiz 2023"), br(), "Einzelpersonen")),
+  titlePanel(p(strong("Nationalratswahlen Schweiz 2023"), br(), "Wahlkampfbudget - Einzelpersonen")),
   
   br(),
   br(),
@@ -80,12 +80,6 @@ ui <- fluidPage(
                   multiple = TRUE,
                   selected = NULL),
       
-      # selectInput(inputId = "campaign_for",
-      #             label = "Kampagne für:",
-      #             choices = sort(unique(elections_2023_single_politicians$kampagne_fur)),
-      #             multiple = FALSE,
-      #             selected = "Einzelperson"),
-      
       actionButton(inputId = "action_button",
                    label = "Ergebnisse anzeigen!"),
       
@@ -107,10 +101,10 @@ ui <- fluidPage(
       tabPanel(title = "Grafiken",
                br(),
                plotOutput("plot_1",
-                          height = "800px"),
+                          height = "1000px"),
                hr(),
                plotOutput("plot_2",
-                          height = "800px"),
+                          height = "1000px"),
                hr()),
       
       # data info
@@ -195,25 +189,24 @@ server <- function(input, output, session) {
                  lty = 1,
                  linewidth = 1.1,
                  alpha = 0.5) + 
-      annotate(geom = "label",
-               x = median(elections_2023_single_politicians$einnahmen_total) - 3000, 
-               y = ifelse(length(input$politician_name > 0), 
-                          length(input$politician_name), 
-                          70),
-               label = glue("Median:\n{format(median(elections_2023_single_politicians$einnahmen_total), big.mark = '`')} CHF")) +
-      annotate(geom = "label",
-               x = mean(elections_2023_single_politicians$einnahmen_total) + 3000, 
-               y = ifelse(length(input$politician_name > 0), 
-                          length(input$politician_name), 
-                          50),
-               label = glue("Durchschnitt:\n{format(round(mean(elections_2023_single_politicians$einnahmen_total), 2), big.mark = '`')} CHF")) +
+      geom_label(x = median(elections_2023_single_politicians$einnahmen_total), 
+                       y = ifelse(length(input$politician_name > 0), 
+                                  length(input$politician_name),
+                                  50),
+                       label = glue("Median:\n{format(median(elections_2023_single_politicians$einnahmen_total), big.mark = '`')} CHF")) +
+      geom_label(x = mean(elections_2023_single_politicians$einnahmen_total), 
+                       y = ifelse(length(input$politician_name > 0), 
+                                  length(input$politician_name) / 1.05,
+                                  70),
+                       label = glue("Durchschnitt:\n{format(round(mean(elections_2023_single_politicians$einnahmen_total), 2), big.mark = '`')} CHF")) +
       scale_x_continuous(labels = comma_format(big.mark = "`"),
                          breaks = seq(0, 400000, 50000)) + 
       scale_fill_manual(values = party_colors) +
       labs(title = "\nWelche Einzelperson hat am meisten Geld für die jeweilige Wahlkampagne zur Verfügung?\n",
            fill = "Partei:",
            x = "\nMenge an zur Verfügung stehendem Geld in CHF\n",
-           y = "")
+           y = "") +
+      theme(legend.position = "top")
     
   })
   
@@ -231,7 +224,9 @@ server <- function(input, output, session) {
            x = "",
            y = "",
            fill = "") +
-      guides(fill = guide_legend(reverse = TRUE))
+      theme(legend.position = "top") +
+      guides(fill = guide_legend(reverse = TRUE,
+                                 ncol = 2))
     
   })
   
@@ -247,6 +242,7 @@ server <- function(input, output, session) {
   
   ### 3. observer
   observe({
+    
     new_politician_choices <- elections_2023_single_politicians %>% 
       filter(partei %in% input$party_name) %>% 
       pull(name_choices) %>% 
