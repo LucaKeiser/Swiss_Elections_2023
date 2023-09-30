@@ -86,8 +86,9 @@ ui <- fluidPage(
       br(),
       
       p(strong("Hinweis 1:"), "Damit Politiker*innen im Dropdown-Menü angezeigt werden, wählen Sie bitte zuerst die entsprechende(n) Partei(en) aus.", br(),
-        strong("Hinweis 2:"), "Wird nichts angewählt und auf 'ERGEBNISSE ANZEIGEN!' geklickt, werden alle 120 Personen im Datensatz dargestellt.", br(),
-        strong("Hinweis 3:"), "Verwenden Sie bei der Benutzung mit dem Mobiltelefon bitte das Querformat.")
+        strong("Hinweis 2:"), "Sie können auch lediglich eine Partei anwählen. Dann werden sämtliche Kandidierende der entsprechenden Partei angezeigt.", br(),
+        strong("Hinweis 3:"), "Wird nichts angewählt und auf 'ERGEBNISSE ANZEIGEN!' geklickt, werden alle 120 Personen im Datensatz dargestellt.", br(),
+        strong("Hinweis 4:"), "Verwenden Sie bei der Benutzung mit dem Mobiltelefon bitte das Querformat.")
       
     ),
     
@@ -147,6 +148,11 @@ server <- function(input, output, session) {
       elections_2023_single_politicians %>% 
         filter(partei %in% input$party_name &
                  name_choices %in% input$politician_name)
+      
+    } else if(length(input$party_name) > 0) {
+      
+      elections_2023_single_politicians %>% 
+        filter(partei %in% input$party_name)
       
     } else{
       
