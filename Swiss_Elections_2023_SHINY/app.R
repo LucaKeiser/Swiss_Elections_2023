@@ -47,7 +47,7 @@ ui <- fluidPage(
   
   
   ### select a theme
-  theme = shinytheme("simplex"),
+  theme = shinytheme("sandstone"),
   
   
   ### Application title
@@ -58,7 +58,6 @@ ui <- fluidPage(
   
   br(),
   br(),
-  
   
   ###### 1. SIDEBAR PANEL ###### 
   
@@ -112,9 +111,16 @@ ui <- fluidPage(
                br(),
                dataTableOutput("data_table"))
       
-    )
+    ),
     
-  )
+  ),
+  
+  # caption
+  br(),
+  helpText("Shiny-App by ©Luca Keiser", br(), br(),
+           "Die Daten wurden am 29.09.2023 von der Webseite der Eidgenössischen Finanzkontrolle", br(),
+           "(https://politikfinanzierung.efk.admin.ch/app/de/campaign-financings) heruntergeladen.",
+           align = "right")
 )
 
 
@@ -190,15 +196,15 @@ server <- function(input, output, session) {
                  linewidth = 1.1,
                  alpha = 0.5) + 
       geom_label(x = median(elections_2023_single_politicians$einnahmen_total), 
-                       y = ifelse(length(input$politician_name > 0), 
-                                  length(input$politician_name),
-                                  50),
-                       label = glue("Median:\n{format(median(elections_2023_single_politicians$einnahmen_total), big.mark = '`')} CHF")) +
+                 y = ifelse(length(input$politician_name > 0), 
+                            length(input$politician_name),
+                            50),
+                 label = glue("Median:\n{format(median(elections_2023_single_politicians$einnahmen_total), big.mark = '`')} CHF")) +
       geom_label(x = mean(elections_2023_single_politicians$einnahmen_total), 
-                       y = ifelse(length(input$politician_name > 0), 
-                                  length(input$politician_name) / 1.05,
-                                  70),
-                       label = glue("Durchschnitt:\n{format(round(mean(elections_2023_single_politicians$einnahmen_total), 2), big.mark = '`')} CHF")) +
+                 y = ifelse(length(input$politician_name > 0), 
+                            length(input$politician_name) / 1.05,
+                            70),
+                 label = glue("Durchschnitt:\n{format(round(mean(elections_2023_single_politicians$einnahmen_total), 2), big.mark = '`')} CHF")) +
       scale_x_continuous(labels = comma_format(big.mark = "`"),
                          breaks = seq(0, 400000, 50000)) + 
       scale_fill_manual(values = party_colors) +
