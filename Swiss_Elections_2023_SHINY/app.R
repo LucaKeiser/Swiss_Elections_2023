@@ -30,8 +30,8 @@ party_colors <- c(SVP = "#00A04F",
 
 # define money colors
 money_colors <- c(`Eigenmittel` = "#86CA78",
-                  `Monetare Zuwendungen` = "#B4D4DA",
-                  `Wert nicht monetarer Zuwendungen` = "#3F8BBA",
+                  `Monetäre Zuwendungen` = "#B4D4DA",
+                  `Wert nicht monetärer Zuwendungen` = "#3F8BBA",
                   `Einnahmen Veranstaltungen` = "#1C5F9E",
                   `Einnahmen Güter und Dienstleistungen` = "#26456E")
 
@@ -85,7 +85,8 @@ ui <- fluidPage(
       br(),
       br(),
       
-      p(strong("Hinweis:"), "Damit Politiker*innen im Dropdown-Menü angezeigt werden, wählen Sie bitte zuerst die entsprechende(n) Partei(en) aus."),
+      p(strong("Hinweis 1:"), "Damit Politiker*innen im Dropdown-Menü angezeigt werden, wählen Sie bitte zuerst die entsprechende(n) Partei(en) aus.", br(),
+        strong("Hinweis 2:"), "Wird nichts angewählt und auf 'Ergebnisse anzeigen!' geklickt, werden alle 120 Personen im Datensatz dargestellt."),
       
     ),
     
@@ -100,10 +101,10 @@ ui <- fluidPage(
       tabPanel(title = "Grafiken",
                br(),
                plotOutput("plot_1",
-                          height = "1000px"),
+                          height = "1750px"),
                hr(),
                plotOutput("plot_2",
-                          height = "1000px"),
+                          height = "1750px"),
                hr()),
       
       # data info
@@ -155,9 +156,9 @@ server <- function(input, output, session) {
   elections_2023_single_politicians_plot_2 <- reactive({
     
     elections_2023_single_politicians_reactive() %>% 
-      mutate(`Monetare Zuwendungen` = einnahmen_monetare_zuwendungen /
+      mutate(`Monetäre Zuwendungen` = einnahmen_monetare_zuwendungen /
                einnahmen_total,
-             `Wert nicht monetarer Zuwendungen` = einnahmen_nicht_monetare_zuwendungen /
+             `Wert nicht monetärer Zuwendungen` = einnahmen_nicht_monetare_zuwendungen /
                einnahmen_total,
              `Einnahmen Veranstaltungen` = einnahmen_veranstaltungen /
                einnahmen_total,
@@ -165,14 +166,14 @@ server <- function(input, output, session) {
                einnahmen_total,
              `Eigenmittel` = eigenmittel /
                einnahmen_total) %>% 
-      pivot_longer(cols = `Monetare Zuwendungen`:`Eigenmittel`,
+      pivot_longer(cols = `Monetäre Zuwendungen`:`Eigenmittel`,
                    names_to = "pct_variables",
                    values_to = "pct_values") %>% 
       mutate(pct_variables = fct_relevel(pct_variables, 
                                          "Einnahmen Güter und Dienstleistungen",
                                          "Einnahmen Veranstaltungen",
-                                         "Wert nicht monetarer Zuwendungen",
-                                         "Monetare Zuwendungen",
+                                         "Wert nicht monetärer Zuwendungen",
+                                         "Monetäre Zuwendungen",
                                          "Eigenmittel"))
     
   })
@@ -212,7 +213,8 @@ server <- function(input, output, session) {
            fill = "Partei:",
            x = "\nMenge an zur Verfügung stehendem Geld in CHF\n",
            y = "") +
-      theme(legend.position = "top")
+      theme(legend.position = "top",
+            text = element_text(size = 18))
     
   })
   
@@ -230,7 +232,8 @@ server <- function(input, output, session) {
            x = "",
            y = "",
            fill = "") +
-      theme(legend.position = "top") +
+      theme(legend.position = "top",
+            text = element_text(size = 18)) +
       guides(fill = guide_legend(reverse = TRUE,
                                  ncol = 2))
     
