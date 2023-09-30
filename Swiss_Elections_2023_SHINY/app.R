@@ -205,23 +205,14 @@ server <- function(input, output, session) {
                  lty = 1,
                  linewidth = 1.1,
                  alpha = 0.5) + 
-      geom_label(x = median(elections_2023_single_politicians$einnahmen_total), 
-                 y = ifelse(length(input$politician_name > 0), 
-                            length(input$politician_name),
-                            50),
-                 label = glue("Median:\n{format(median(elections_2023_single_politicians$einnahmen_total), big.mark = '`')} CHF")) +
-      geom_label(x = mean(elections_2023_single_politicians$einnahmen_total), 
-                 y = ifelse(length(input$politician_name > 0), 
-                            length(input$politician_name) / 1.05,
-                            70),
-                 label = glue("Durchschnitt:\n{format(round(mean(elections_2023_single_politicians$einnahmen_total), 2), big.mark = '`')} CHF")) +
       scale_x_continuous(labels = comma_format(big.mark = "`"),
                          breaks = seq(0, 400000, 50000)) + 
       scale_fill_manual(values = party_colors) +
       labs(title = "\nWelche Einzelperson hat am meisten Geld für die\njeweilige Wahlkampagne zur Verfügung?\n",
            fill = "Partei:",
            x = "\nMenge an zur Verfügung stehendem Geld in CHF\n",
-           y = "") +
+           y = "",
+           caption = glue("Gestrichelte Linie: Medianwert aller NR-Kandidierenden ({format(median(elections_2023_single_politicians$einnahmen_total), big.mark = '`')} CHF)\nDurchgezogene Linie: Durchschnittswert aller NR-Kandidierenden: ({format(round(mean(elections_2023_single_politicians$einnahmen_total)), big.mark = '`')} CHF)")) +
       theme(legend.position = "top",
             text = element_text(size = 15))
     
