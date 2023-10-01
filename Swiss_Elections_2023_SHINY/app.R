@@ -11,11 +11,16 @@ library(glue)
 theme_set(theme_minimal())
 
 # data
-elections_2023_single_politicians <- read_rds(here::here("swiss_elections_2023.rds")) %>% 
-  filter(kampagne_fur == "Einzelperson") %>% 
-  mutate(name_choices = paste(glue("{name} ({partei_kurz})")))
+elections_2023 <- read_rds(here::here("swiss_elections_2023.rds"))
 
-# get party color
+elections_2023_single_person <- elections_2023 %>% 
+  filter(kampagne_fur == "Einzelperson")
+
+elections_2023_groups <- elections_2023 %>% 
+  filter(kampagne_fur == "Gruppe von Kandidierenden")
+
+
+# define party colors
 party_colors <- c(SVP = "#00A04F",
                   SP = "#E40326",
                   FDP = "#104FA0",
@@ -39,8 +44,6 @@ money_colors <- c(`Eigenmittel` = "#86CA78",
 
 
 
-
-
 # User interface (aka front end) ------------------------------------------
 
 ui <- fluidPage(
@@ -54,41 +57,51 @@ ui <- fluidPage(
   br(),
   br(),
   
-  titlePanel(p(strong("Nationalratswahlen Schweiz 2023"), br(), "Wahlkampfbudget - Einzelpersonen")),
+  titlePanel(
+    
+    windowTitle = "Nationalratswahlen Schweiz 2023",
+    title = p(strong("Nationalratswahlen Schweiz 2023"), br(), "Wahlkampfbudgets - Einzelpersonen & Gruppen von Kandidierenden")),
+  
   
   br(),
   br(),
+  
   
   ###### 1. SIDEBAR PANEL ###### 
   
-  ### Sidebar with a slider input for number of bins 
   sidebarLayout(
-    
     
     sidebarPanel(
       
+      selectInput(inputId = "campaign_for",
+                  label = "Kampagne für:",
+                  choices = sort(unique(elections_2023$kampagne_fur)),
+                  multiple = FALSE,
+                  selected = "Einzelperson"),
+      
       selectInput(inputId = "party_name",
                   label = "Partei:",
-                  choices = sort(unique(elections_2023_single_politicians$partei)),
+                  choices = sort(unique(elections_2023$partei)),
                   multiple = TRUE,
                   selected = NULL),
       
       selectInput(inputId = "politician_name",
                   label = "Politiker*in:",
-                  choices = sort(unique(elections_2023_single_politicians$name_choices)),
+                  choices = character(0),
                   multiple = TRUE,
                   selected = NULL),
       
       actionButton(inputId = "action_button",
-                   label = "ERGEBNISSE ANZEIGEN!"),
+                   label = "Ergebnisse Anzeigen!"),
       
       br(),
       br(),
       
       p(strong("Hinweis 1:"), "Damit Politiker*innen im Dropdown-Menü angezeigt werden, wählen Sie bitte zuerst die entsprechende(n) Partei(en) aus.", br(),
-        strong("Hinweis 2:"), "Sie können auch lediglich eine Partei anwählen. Dann werden sämtliche Kandidierende der entsprechenden Partei angezeigt.", br(),
-        strong("Hinweis 3:"), "Wird nichts angewählt und auf 'ERGEBNISSE ANZEIGEN!' geklickt, werden alle 120 Personen im Datensatz dargestellt.", br(),
-        strong("Hinweis 4:"), "Verwenden Sie bei der Benutzung mit dem Mobiltelefon bitte das Querformat.")
+        strong("Hinweis 2:"), "Sie können auch lediglich eine Partei anwählen. Dann werden sämtliche (!) Kandidierende der entsprechenden Partei angezeigt.", br(),
+        strong("Hinweis 3:"), "Wird nichts angewählt und auf 'Ergebnisse Anzeigen!' geklickt, werden alle (!) Personen im jweiligen Datensatz dargestellt.", br(),
+        strong("Hinweis 4:"), "Der Gesamtbetrag bei 'Gruppe von Kandidierenden' kommt der Gesamtgruppe und nicht (!) einer Person zu. Siehe 'Weitere Informationen zu den Kampagnen'", br(),
+        strong("Hinweis 5:"), "Verwenden Sie bei der Benutzung mit dem Mobiltelefon bitte das Querformat.")
       
     ),
     
@@ -102,17 +115,23 @@ ui <- fluidPage(
       # plots
       tabPanel(title = "Grafiken",
                br(),
-               plotOutput("plot_1",
-                          height = "1750px",
+               plotOutput("absolut_plot",
+                          height = "1000px",
                           width = "75%"),
                hr(),
-               plotOutput("plot_2",
-                          height = "1750px",
+               plotOutput("percent_plot",
+                          height = "1000px",
                           width = "75%"),
                hr()),
       
+      # further information
+      tabPanel(title = "Weitere Informationen zu den Kampagnen",
+               br(),
+               tableOutput("info"),
+               hr()),
+      
       # data info
-      tabPanel(title = "Daten",
+      tabPanel(title = "Verwendete Daten",
                br(),
                dataTableOutput("data_table"))
       
@@ -120,7 +139,9 @@ ui <- fluidPage(
     
   ),
   
-  # caption
+  
+  ###### 3. caption ###### 
+  
   br(),
   helpText("Shiny-App by ©Luca Keiser", br(), br(),
            "Die Daten wurden am 29.09.2023 von der Webseite der Eidgenössischen Finanzkontrolle", br(),
@@ -134,37 +155,67 @@ ui <- fluidPage(
 
 # Server (aka back end) ---------------------------------------------------
 
-# Define server logic required to draw a histogram
 server <- function(input, output, session) {
   
+  ###### 1. create reactive expressions ###### 
   
-  ### 1. create reactive expression
-  elections_2023_single_politicians_reactive <- eventReactive(input$action_button, {
+  # 1.1.
+  elections_2023_reactive <- eventReactive(input$action_button, {
     
+    # single person
+    if(input$campaign_for == "Einzelperson") {
+      
+      
+      if(length(input$party_name) > 0 & 
+         length(input$politician_name) > 0) {
+        
+        elections_2023_single_person %>% 
+          filter(partei %in% input$party_name &
+                   name_choices %in% input$politician_name)
+        
+      } else if(length(input$party_name) > 0) {
+        
+        elections_2023_single_person %>% 
+          filter(partei %in% input$party_name)
+        
+      } else{
+        
+        elections_2023_single_person
+        
+      }
+      
+    }
     
-    if(length(input$party_name) > 0 & 
-       length(input$politician_name) > 0) {
+    # groups
+    else {
       
-      elections_2023_single_politicians %>% 
-        filter(partei %in% input$party_name &
-                 name_choices %in% input$politician_name)
-      
-    } else if(length(input$party_name) > 0) {
-      
-      elections_2023_single_politicians %>% 
-        filter(partei %in% input$party_name)
-      
-    } else{
-      
-      elections_2023_single_politicians
+      if(length(input$party_name) > 0 & 
+         length(input$politician_name) > 0) {
+        
+        elections_2023_groups %>% 
+          filter(partei %in% input$party_name &
+                   name_choices %in% input$politician_name)
+        
+      } else if(length(input$party_name) > 0) {
+        
+        elections_2023_groups %>% 
+          filter(partei %in% input$party_name)
+        
+      } else{
+        
+        elections_2023_groups
+        
+      }
       
     }
     
   })
   
-  elections_2023_single_politicians_plot_2 <- reactive({
+  
+  # 1.2.
+  percent_plot <- reactive({
     
-    elections_2023_single_politicians_reactive() %>% 
+    elections_2023_reactive() %>% 
       mutate(`Monetäre Zuwendungen` = einnahmen_monetare_zuwendungen /
                einnahmen_total,
              `Wert nicht monetärer Zuwendungen` = einnahmen_nicht_monetare_zuwendungen /
@@ -188,45 +239,60 @@ server <- function(input, output, session) {
   })
   
   
-  ### 2. outputs
+  ###### 2. outputs ###### 
   
-  # plot_1
-  output$plot_1 <- renderPlot({
+  # 1. info
+  output$info <- renderTable({
     
-    elections_2023_single_politicians_reactive() %>%
+    elections_2023_reactive() %>% 
+      select(name_choices, anzahl_personen_kampagne, kampagne, akteur) %>% 
+      mutate(kampagne = str_replace_all(kampagne, "\\),", "\\);"),
+             anzahl_personen_kampagne = as.integer(anzahl_personen_kampagne)) %>% 
+      rename("Name & Partei" = name_choices,
+             "Wie viele Personen sind Teil der Kampagne?" = anzahl_personen_kampagne,
+             "Welche Akteure finanzieren die Kampagne?" = akteur,
+             "Welche Kandidiernde sind in der gleichen Kampagne?" = kampagne)
+    
+  })
+  
+  
+  # 2. absolut_plot
+  output$absolut_plot <- renderPlot({
+    
+    elections_2023_reactive() %>%
       mutate(name = fct_reorder(name, einnahmen_total)) %>%
       ggplot(aes(einnahmen_total, name)) + 
       geom_col(aes(fill = partei_kurz)) + 
-      geom_vline(xintercept = median(elections_2023_single_politicians$einnahmen_total),
+      geom_vline(xintercept = median(elections_2023$einnahmen_total),
                  lty = 2,
                  linewidth = 1.1,
                  alpha = 0.5) + 
-      geom_vline(xintercept = mean(elections_2023_single_politicians$einnahmen_total),
+      geom_vline(xintercept = mean(elections_2023$einnahmen_total),
                  lty = 1,
                  linewidth = 1.1,
                  alpha = 0.5) + 
       scale_x_continuous(labels = comma_format(big.mark = "`"),
-                         breaks = seq(0, 400000, 50000)) + 
+                         breaks = seq(0, 1500000, 50000)) + 
       scale_fill_manual(values = party_colors) +
       labs(title = "\nWelche Einzelperson hat am meisten Geld für die\njeweilige Wahlkampagne zur Verfügung?\n",
            fill = "Partei:",
            x = "\nMenge an zur Verfügung stehendem Geld in CHF\n",
            y = "",
-           caption = glue("Gestrichelte Linie: Medianwert aller NR-Kandidierenden ({format(median(elections_2023_single_politicians$einnahmen_total), big.mark = '`')} CHF)\nDurchgezogene Linie: Durchschnittswert aller NR-Kandidierenden: ({format(round(mean(elections_2023_single_politicians$einnahmen_total)), big.mark = '`')} CHF)")) +
+           caption = glue("Gestrichelte Linie: Medianwert aller (Einzelpersonen & Gruppen) NR-Kandidierenden ({format(median(elections_2023$einnahmen_total), big.mark = '`')} CHF)\nDurchgezogene Linie: Durchschnittswert aller (Einzelpersonen & Gruppen) NR-Kandidierenden ({format(round(mean(elections_2023$einnahmen_total)), big.mark = '`')} CHF)")) +
       theme(legend.position = "top",
             text = element_text(size = 15))
     
   })
   
-  # plot_2
-  output$plot_2 <- renderPlot({
+  # 3. percent_plot
+  output$percent_plot <- renderPlot({
     
-    elections_2023_single_politicians_plot_2() %>% 
+    percent_plot() %>%
       mutate(name = fct_reorder(name, einnahmen_total)) %>%
       ggplot(aes(pct_values, name,
-                 fill = pct_variables)) + 
+                 fill = pct_variables)) +
       geom_col(color = "white") +
-      scale_x_continuous(labels = percent_format()) + 
+      scale_x_continuous(labels = percent_format()) +
       scale_fill_manual(values = money_colors) +
       labs(title = "\nWie setzt sich das Geld für die\nWahlkampagne zusammen?\n",
            x = "",
@@ -239,29 +305,49 @@ server <- function(input, output, session) {
     
   })
   
-  
-  
-  # data_table
+  # 4. data_table
   output$data_table <- renderDataTable({
-    elections_2023_single_politicians_reactive() %>% 
-      select(-c(partei_kurz, name_choices))
+    
+    elections_2023_reactive()
+    
   })
   
   
-  
-  ### 3. observer
+  ###### 3. observer ###### 
   observe({
     
-    new_politician_choices <- elections_2023_single_politicians %>% 
-      filter(partei %in% input$party_name) %>% 
-      pull(name_choices) %>% 
-      unique() %>% 
-      sort()
+    # 3.1.
+    if(input$campaign_for == "Einzelperson") {
+      
+      new_politician_choices <- elections_2023_single_person %>%
+        filter(partei %in% input$party_name) %>%
+        pull(name_choices) %>%
+        unique() %>%
+        sort()
+      
+      
+      updateSelectizeInput(session,
+                           inputId = "politician_name",
+                           choices = new_politician_choices,
+                           server = TRUE)
+    }
     
-    
-    updateSelectInput(session, 
-                      inputId = "politician_name",
-                      choices = new_politician_choices)
+    # 3.2.
+    else {
+      
+      new_politician_choices <- elections_2023_groups %>%
+        filter(partei %in% input$party_name) %>%
+        pull(name_choices) %>%
+        unique() %>%
+        sort()
+      
+      
+      updateSelectizeInput(session,
+                           inputId = "politician_name",
+                           choices = new_politician_choices,
+                           server = TRUE)
+      
+    }
     
   })
   
