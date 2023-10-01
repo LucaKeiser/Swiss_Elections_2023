@@ -59,7 +59,7 @@ df <- df %>%
                       sep = " "),
          name = str_to_title(name)) %>% 
   # create names for drop downs (shiny-app)
-  mutate(name_choices = paste(glue("{name} ({partei_kurz})"))) 
+  mutate(name_choices = paste(glue("{name} ({partei_kurz}, {kanton})"))) 
 
 
 ### 4. remove invalid observations (26 observations with no name)

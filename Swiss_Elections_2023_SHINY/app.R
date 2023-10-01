@@ -7,6 +7,7 @@ library(shinythemes)
 library(tidyverse)
 library(scales)
 library(glue)
+library(psych)
 
 theme_set(theme_minimal())
 
@@ -130,10 +131,14 @@ ui <- fluidPage(
                tableOutput("info"),
                hr()),
       
-      # data info
-      tabPanel(title = "Verwendete Daten",
+      tabPanel(title = "Datenübersicht",
                br(),
-               dataTableOutput("data_table"))
+               p(strong("...des aktuellen Teildatensatzes")),
+               verbatimTextOutput("summary_current"),
+               hr(),
+               p(strong("...des gesamten Datensatzes")),
+               verbatimTextOutput("summary_overall"),
+               hr())
       
     ),
     
@@ -246,7 +251,7 @@ server <- function(input, output, session) {
   output$info <- renderTable({
     
     elections_2023_reactive() %>% 
-      select(name_choices, einnahmen_total, anzahl_personen_kampagne, kampagne, akteur) %>% 
+      select(name_choices, einnahmen_total, akteur, anzahl_personen_kampagne, kampagne) %>% 
       mutate(einnahmen_total = format(einnahmen_total, 
                                       big.mark = "`"),
              kampagne = str_replace_all(kampagne, "\\),", "\\);"),
@@ -278,7 +283,7 @@ server <- function(input, output, session) {
       scale_x_continuous(labels = comma_format(big.mark = "`"),
                          breaks = seq(0, 1500000, 50000)) + 
       scale_fill_manual(values = party_colors) +
-      labs(title = "\nWelche Einzelperson hat am meisten Geld für die\njeweilige Wahlkampagne zur Verfügung?\n",
+      labs(title = "\nWie viel Geld steht für die jeweilige Wahlkampagne zur Verfügung?\n",
            fill = "Partei:",
            x = "\nMenge an zur Verfügung stehendem Geld in CHF\n",
            y = "",
@@ -298,7 +303,7 @@ server <- function(input, output, session) {
       geom_col(color = "white") +
       scale_x_continuous(labels = percent_format()) +
       scale_fill_manual(values = money_colors) +
-      labs(title = "\nWie setzt sich das Geld für die\nWahlkampagne zusammen?\n",
+      labs(title = "\nWie setzt sich das Geld für die Wahlkampagne zusammen?\n",
            x = "",
            y = "",
            fill = "") +
@@ -309,11 +314,22 @@ server <- function(input, output, session) {
     
   })
   
-  # 2.4. data_table
-  output$data_table <- renderDataTable({
-    
-    elections_2023_reactive()
-    
+  # 2.4.1.
+  output$summary_current <- renderPrint({
+    elections_2023_reactive() %>%
+      select(-datum_des_exports) %>% 
+      describe() %>% 
+      select(-c(vars, sd, trimmed, mad, range, 
+                skew, kurtosis, se))
+  })
+  
+  # 2.4.2.
+  output$summary_overall <- renderPrint({
+    elections_2023 %>% 
+      select(-datum_des_exports) %>% 
+      describe() %>% 
+      select(-c(vars, sd, trimmed, mad, range,
+                skew, kurtosis, se))
   })
   
   
