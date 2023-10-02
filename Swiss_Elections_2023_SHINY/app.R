@@ -157,9 +157,10 @@ ui <- fluidPage(
   ###### 3. caption ###### 
   
   br(),
-  helpText("Shiny-App by ©Luca Keiser", br(), br(),
-           "Die Daten wurden am 29.09.2023 von der Webseite der Eidgenössischen Finanzkontrolle", br(),
-           "(https://politikfinanzierung.efk.admin.ch/app/de/campaign-financings) heruntergeladen.",
+  helpText("Die Daten wurden am 02.10.2023 aktualisiert. Siehe Webseite der Eidgenössischen Finanzkontrolle:", br(),
+           "https://politikfinanzierung.efk.admin.ch/app/de/campaign-financings.",
+           align = "left"), br(), br(),
+  helpText("Shiny-App by ©Luca Keiser",
            align = "right")
 )
 
