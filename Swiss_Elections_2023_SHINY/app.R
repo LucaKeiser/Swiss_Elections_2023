@@ -351,7 +351,8 @@ server <- function(input, output, session) {
       skim() %>% 
       as_tibble() %>% 
       filter(skim_type == "numeric") %>% 
-      janitor::remove_empty(which = "cols")
+      remove_empty(which = "cols") %>% 
+      mutate(across(n_missing:numeric.p100, ~round(.)))
   })
   
   # 2.4.2.
@@ -360,7 +361,7 @@ server <- function(input, output, session) {
       skim() %>% 
       as_tibble() %>% 
       filter(skim_type == "Date") %>% 
-      janitor::remove_empty(which = "cols")
+      remove_empty(which = "cols")
   })
   
   output$summary_overall_character <- renderDataTable({
@@ -368,7 +369,7 @@ server <- function(input, output, session) {
       skim() %>% 
       as_tibble() %>% 
       filter(skim_type == "character") %>% 
-      janitor::remove_empty(which = "cols")
+      remove_empty(which = "cols")
   })
   
   output$summary_overall_numeric <- renderDataTable({
@@ -376,7 +377,8 @@ server <- function(input, output, session) {
       skim() %>% 
       as_tibble() %>% 
       filter(skim_type == "numeric") %>% 
-      janitor::remove_empty(which = "cols")
+      remove_empty(which = "cols") %>% 
+      mutate(across(n_missing:numeric.p100, ~round(.)))
   })
   
   
