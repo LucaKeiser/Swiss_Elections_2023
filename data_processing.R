@@ -138,6 +138,38 @@ df <- df %>%
   mutate(anzahl_personen_kampagne = str_count(kampagne, "\\),") + 1)
 
 
+### 10. temp name fix
+# NOTE: some names appear twice (data entry issue? Some cases seem implausible...)
+#       temporary solution for plots => add "(...) 2" to one of the names.
+
+df <- df %>% 
+  rowid_to_column()
+
+# see which cases
+df %>% 
+  filter(kampagne_fur == "Gruppe von Kandidierenden") %>% 
+  add_count(name) %>% 
+  filter(n > 1) %>% 
+  select(rowid, name, name_choices, einnahmen_total) %>% 
+  arrange(name) %>% 
+  View()
+
+# "fix"
+df <- df %>% 
+  mutate(name = ifelse(rowid %in% c(83, 2085, 315, 561, 1465,
+                                    1889, 646, 522, 1854),
+                       glue("{name} 2"),
+                       name)
+  )
+
+# check
+df %>% 
+  filter(kampagne_fur == "Gruppe von Kandidierenden") %>% 
+  add_count(name) %>% 
+  filter(n > 1)
+
+
+
 
 
 # save --------------------------------------------------------------------
