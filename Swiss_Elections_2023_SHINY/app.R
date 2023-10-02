@@ -100,8 +100,8 @@ ui <- fluidPage(
       br(),
       
       p(strong("Hinweis 1:"), "Damit Politiker*innen im Dropdown-Menü angezeigt werden, wählen Sie bitte zuerst die entsprechende(n) Partei(en) aus.", br(),
-        strong("Hinweis 2:"), "Sie können auch lediglich eine Partei anwählen. Dann werden sämtliche Kandidierende der entsprechenden Partei angezeigt.", br(),
-        strong("Hinweis 3:"), "Wird nichts angewählt und auf 'Ergebnisse Anzeigen!' geklickt, werden sämltiche Kandidierende im jweiligen Datensatz dargestellt. ", br(),
+        strong("Hinweis 2:"), "Sie können auch lediglich eine Partei anwählen. Dann werden sämtliche Kandidierende (max. 120) der entsprechenden Partei angezeigt.", br(),
+        strong("Hinweis 3:"), "Wird nichts angewählt und auf 'Ergebnisse Anzeigen!' geklickt, werden sämltiche Kandidierende (max. 120) im jweiligen Datensatz dargestellt.", br(),
         strong("Hinweis 4:"), "Der Gesamtbetrag bei 'Gruppe von Kandidierenden' kommt der Gesamtgruppe und nicht einer einzelnen Person zu (siehe 'Weitere Informationen zu den Kampagnen').", br(),
         strong("Hinweis 5:"), "Verwenden Sie bei der Benutzung mit dem Mobiltelefon bitte das Querformat (Verwendung am Computer empfohlen).")
       
@@ -324,7 +324,7 @@ server <- function(input, output, session) {
                            breaks = seq(0, 1500000, 50000)) + 
         scale_fill_manual(values = party_colors) +
         labs(title = "\nWie viel Geld steht für die jeweilige Wahlkampagne zur Verfügung?",
-             subtitle = "Aus Darstellungsgründen werden nachfolgend nur die ersten 120 Kandidiernden angezeigt.\n",
+             subtitle = "Aus Darstellungsgründen werden nachfolgend nur die ersten 120 Kandidierenden angezeigt.\n",
              fill = "Partei:",
              x = "\nMenge an zur Verfügung stehendem Geld in CHF\n",
              y = "",
@@ -375,8 +375,8 @@ server <- function(input, output, session) {
         geom_col(color = "white") +
         scale_x_continuous(labels = percent_format()) +
         scale_fill_manual(values = money_colors) +
-        labs(title = "\nWie setzt sich das Geld für die Wahlkampagne zusammen?",
-             subtitle = "Aus Darstellungsgründen werden nachfolgend nur die ersten 120 Kandidiernden angezeigt.\n",
+        labs(title = "\nWie setzt sich das Geld für die jeweilige Wahlkampagne zusammen?",
+             subtitle = "Aus Darstellungsgründen werden nachfolgend nur die ersten 120 Kandidierenden angezeigt.\n",
              x = "",
              y = "",
              fill = "") +
@@ -394,7 +394,7 @@ server <- function(input, output, session) {
         geom_col(color = "white") +
         scale_x_continuous(labels = percent_format()) +
         scale_fill_manual(values = money_colors) +
-        labs(title = "\nWie setzt sich das Geld für die Wahlkampagne zusammen?\n",
+        labs(title = "\nWie setzt sich das Geld für die jeweilige Wahlkampagne zusammen?\n",
              x = "",
              y = "",
              fill = "") +
