@@ -6,8 +6,9 @@ library(shiny)
 library(shinythemes)
 library(tidyverse)
 library(scales)
+library(skimr)
+library(janitor)
 library(glue)
-library(psych)
 
 theme_set(theme_minimal())
 
@@ -102,7 +103,7 @@ ui <- fluidPage(
         strong("Hinweis 2:"), "Sie können auch lediglich eine Partei anwählen. Dann werden sämtliche Kandidierende der entsprechenden Partei angezeigt.", br(),
         strong("Hinweis 3:"), "Wird nichts angewählt und auf 'Ergebnisse Anzeigen!' geklickt, werden sämltiche Kandidierende im jweiligen Datensatz dargestellt. ", br(),
         strong("Hinweis 4:"), "Der Gesamtbetrag bei 'Gruppe von Kandidierenden' kommt der Gesamtgruppe und nicht einer einzelnen Person zu (siehe 'Weitere Informationen zu den Kampagnen').", br(),
-        strong("Hinweis 5:"), "Verwenden Sie bei der Benutzung mit dem Mobiltelefon bitte das Querformat.")
+        strong("Hinweis 5:"), "Verwenden Sie bei der Benutzung mit dem Mobiltelefon bitte das Querformat (Verwendung am Computer empfohlen).")
       
     ),
     
@@ -133,25 +134,39 @@ ui <- fluidPage(
       
       tabPanel(title = "Datenübersicht",
                br(),
-               p(strong("...des aktuellen Teildatensatzes")),
-               verbatimTextOutput("summary_current"),
+               br(),
+               p(strong(glue("...des aktuellen Teildatensatzes:"))),
+               br(),
+               dataTableOutput("summary_current_date"),
                hr(),
-               p(strong("...des gesamten Datensatzes")),
-               verbatimTextOutput("summary_overall"),
+               dataTableOutput("summary_current_character"),
+               hr(),
+               dataTableOutput("summary_current_numeric"),
+               br(),
+               hr(),
+               br(),
+               br(),
+               p(strong("...des gesamten Datensatzes:")),
+               br(),
+               dataTableOutput("summary_overall_date"),
+               hr(),
+               dataTableOutput("summary_overall_character"),
+               hr(),
+               dataTableOutput("summary_overall_numeric"),
                hr())
-      
+
     ),
-    
+
   ),
-  
-  
-  ###### 3. caption ###### 
-  
-  br(),
-  helpText("Shiny-App by ©Luca Keiser", br(), br(),
-           "Die Daten wurden am 29.09.2023 von der Webseite der Eidgenössischen Finanzkontrolle", br(),
-           "(https://politikfinanzierung.efk.admin.ch/app/de/campaign-financings) heruntergeladen.",
-           align = "right")
+
+
+###### 3. caption ###### 
+
+br(),
+helpText("Shiny-App by ©Luca Keiser", br(), br(),
+         "Die Daten wurden am 29.09.2023 von der Webseite der Eidgenössischen Finanzkontrolle", br(),
+         "(https://politikfinanzierung.efk.admin.ch/app/de/campaign-financings) heruntergeladen.",
+         align = "right")
 )
 
 
@@ -315,21 +330,53 @@ server <- function(input, output, session) {
   })
   
   # 2.4.1.
-  output$summary_current <- renderPrint({
+  output$summary_current_date <- renderDataTable({
     elections_2023_reactive() %>%
-      select(-datum_des_exports) %>% 
-      describe() %>% 
-      select(-c(vars, sd, trimmed, mad, range, 
-                skew, kurtosis, se))
+      skim() %>% 
+      as_tibble() %>% 
+      filter(skim_type == "Date") %>% 
+      janitor::remove_empty(which = "cols")
+  })
+  
+  output$summary_current_character <- renderDataTable({
+    elections_2023_reactive() %>%
+      skim() %>% 
+      as_tibble() %>% 
+      filter(skim_type == "character") %>% 
+      janitor::remove_empty(which = "cols")
+  })
+  
+  output$summary_current_numeric <- renderDataTable({
+    elections_2023_reactive() %>%
+      skim() %>% 
+      as_tibble() %>% 
+      filter(skim_type == "numeric") %>% 
+      janitor::remove_empty(which = "cols")
   })
   
   # 2.4.2.
-  output$summary_overall <- renderPrint({
+  output$summary_overall_date <- renderDataTable({
     elections_2023 %>% 
-      select(-datum_des_exports) %>% 
-      describe() %>% 
-      select(-c(vars, sd, trimmed, mad, range,
-                skew, kurtosis, se))
+      skim() %>% 
+      as_tibble() %>% 
+      filter(skim_type == "Date") %>% 
+      janitor::remove_empty(which = "cols")
+  })
+  
+  output$summary_overall_character <- renderDataTable({
+    elections_2023 %>% 
+      skim() %>% 
+      as_tibble() %>% 
+      filter(skim_type == "character") %>% 
+      janitor::remove_empty(which = "cols")
+  })
+  
+  output$summary_overall_numeric <- renderDataTable({
+    elections_2023 %>% 
+      skim() %>% 
+      as_tibble() %>% 
+      filter(skim_type == "numeric") %>% 
+      janitor::remove_empty(which = "cols")
   })
   
   
