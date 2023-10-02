@@ -118,11 +118,11 @@ ui <- fluidPage(
       tabPanel(title = "Grafiken",
                br(),
                plotOutput("absolut_plot",
-                          height = "1500px",
+                          height = "1000px",
                           width = "75%"),
                hr(),
                plotOutput("percent_plot",
-                          height = "1500px",
+                          height = "1000px",
                           width = "75%"),
                hr()),
       
@@ -137,6 +137,10 @@ ui <- fluidPage(
                br(),
                p(strong(glue("...des aktuellen Teildatensatzes:"))),
                br(),
+               dataTableOutput("summary_current_date"),
+               hr(),
+               dataTableOutput("summary_current_character"),
+               hr(),
                dataTableOutput("summary_current_numeric"),
                br(),
                hr(),
@@ -144,6 +148,10 @@ ui <- fluidPage(
                br(),
                p(strong("...des gesamten Datensatzes:")),
                br(),
+               dataTableOutput("summary_overall_date"),
+               hr(),
+               dataTableOutput("summary_overall_character"),
+               hr(),
                dataTableOutput("summary_overall_numeric"),
                hr())
       
@@ -228,7 +236,7 @@ server <- function(input, output, session) {
   # 1.2.
   percent_plot <- reactive({
     
-    if(nrow(elections_2023_reactive()) > 120) {
+    if(nrow(elections_2023_reactive() > 120)) {
       
       elections_2023_reactive() %>% 
         top_n(einnahmen_total, n = 120) %>% 
@@ -251,7 +259,6 @@ server <- function(input, output, session) {
                                            "Wert nicht monetärer Zuwendungen",
                                            "Monetäre Zuwendungen",
                                            "Eigenmittel")) 
-      
     } else {
       
       elections_2023_reactive() %>% 
@@ -274,8 +281,9 @@ server <- function(input, output, session) {
                                            "Wert nicht monetärer Zuwendungen",
                                            "Monetäre Zuwendungen",
                                            "Eigenmittel")) 
-    
+      
     }
+    
     
   })
   
@@ -304,7 +312,7 @@ server <- function(input, output, session) {
   # 2.2. absolut_plot
   output$absolut_plot <- renderPlot({
     
-    if(nrow(elections_2023_reactive()) > 120) {
+    if(nrow(elections_2023_reactive() > 120)) {
       
       elections_2023_reactive() %>%
         top_n(einnahmen_total, n = 120) %>% 
@@ -319,12 +327,11 @@ server <- function(input, output, session) {
                    lty = 1,
                    linewidth = 1.1,
                    alpha = 0.5) + 
-        expand_limits(x = 0) +
         scale_x_continuous(labels = comma_format(big.mark = "`"),
                            breaks = seq(0, 1500000, 50000)) + 
         scale_fill_manual(values = party_colors) +
         labs(title = "\nWie viel Geld steht für die jeweilige Wahlkampagne zur Verfügung?",
-             subtitle = "Aus Darstellungsgründen werden nachfolgend nur die ersten 120 Kandidiernden angezeigt.\n",
+             subtitle = "Aus Darstellungsgründen werden nur die ersten 120 Kandidiernden angezeigt.\n",
              fill = "Partei:",
              x = "\nMenge an zur Verfügung stehendem Geld in CHF\n",
              y = "",
@@ -346,7 +353,6 @@ server <- function(input, output, session) {
                    lty = 1,
                    linewidth = 1.1,
                    alpha = 0.5) + 
-        expand_limits(x = 0) +
         scale_x_continuous(labels = comma_format(big.mark = "`"),
                            breaks = seq(0, 1500000, 50000)) + 
         scale_fill_manual(values = party_colors) +
@@ -365,66 +371,72 @@ server <- function(input, output, session) {
   # 2.3. percent_plot
   output$percent_plot <- renderPlot({
     
-    
-    if(input$campaign_for == "Gruppe von Kandidierenden" & nrow(percent_plot()) > 600) {
-      
-      percent_plot() %>%
-        mutate(name = fct_reorder(name, einnahmen_total)) %>%
-        ggplot(aes(pct_values, name,
-                   fill = pct_variables)) +
-        geom_col(color = "white") +
-        scale_x_continuous(labels = percent_format()) +
-        scale_fill_manual(values = money_colors) +
-        labs(title = "\nWie setzt sich das Geld für die Wahlkampagne zusammen?",
-             subtitle = "Aus Darstellungsgründen werden nachfolgend nur die ersten 120 Kandidiernden angezeigt.\n",
-             x = "",
-             y = "",
-             fill = "") +
-        theme(legend.position = "top",
-              text = element_text(size = 15)) +
-        guides(fill = guide_legend(reverse = TRUE,
-                                   ncol = 1))
-      
-    } else {
-      
-      percent_plot() %>%
-        mutate(name = fct_reorder(name, einnahmen_total)) %>%
-        ggplot(aes(pct_values, name,
-                   fill = pct_variables)) +
-        geom_col(color = "white") +
-        scale_x_continuous(labels = percent_format()) +
-        scale_fill_manual(values = money_colors) +
-        labs(title = "\nWie setzt sich das Geld für die Wahlkampagne zusammen?\n",
-             x = "",
-             y = "",
-             fill = "") +
-        theme(legend.position = "top",
-              text = element_text(size = 15)) +
-        guides(fill = guide_legend(reverse = TRUE,
-                                   ncol = 1))      
-      
-    }
+    percent_plot() %>%
+      mutate(name = fct_reorder(name, einnahmen_total)) %>%
+      ggplot(aes(pct_values, name,
+                 fill = pct_variables)) +
+      geom_col(color = "white") +
+      scale_x_continuous(labels = percent_format()) +
+      scale_fill_manual(values = money_colors) +
+      labs(title = "\nWie setzt sich das Geld für die Wahlkampagne zusammen?\n",
+           x = "",
+           y = "",
+           fill = "") +
+      theme(legend.position = "top",
+            text = element_text(size = 15)) +
+      guides(fill = guide_legend(reverse = TRUE,
+                                 ncol = 1))
     
   })
   
   # 2.4.1.
+  output$summary_current_date <- renderDataTable({
+    elections_2023_reactive() %>%
+      skim() %>% 
+      as_tibble() %>% 
+      filter(skim_type == "Date") %>% 
+      janitor::remove_empty(which = "cols")
+  })
+  
+  output$summary_current_character <- renderDataTable({
+    elections_2023_reactive() %>%
+      skim() %>% 
+      as_tibble() %>% 
+      filter(skim_type == "character") %>% 
+      janitor::remove_empty(which = "cols")
+  })
+  
   output$summary_current_numeric <- renderDataTable({
     elections_2023_reactive() %>%
       skim() %>% 
       as_tibble() %>% 
       filter(skim_type == "numeric") %>% 
-      select(-skim_type) %>% 
       remove_empty(which = "cols") %>% 
       mutate(across(n_missing:numeric.p100, ~round(.)))
   })
   
   # 2.4.2.
+  output$summary_overall_date <- renderDataTable({
+    elections_2023 %>% 
+      skim() %>% 
+      as_tibble() %>% 
+      filter(skim_type == "Date") %>% 
+      remove_empty(which = "cols")
+  })
+  
+  output$summary_overall_character <- renderDataTable({
+    elections_2023 %>% 
+      skim() %>% 
+      as_tibble() %>% 
+      filter(skim_type == "character") %>% 
+      remove_empty(which = "cols")
+  })
+  
   output$summary_overall_numeric <- renderDataTable({
     elections_2023 %>% 
       skim() %>% 
       as_tibble() %>% 
       filter(skim_type == "numeric") %>% 
-      select(-skim_type) %>% 
       remove_empty(which = "cols") %>% 
       mutate(across(n_missing:numeric.p100, ~round(.)))
   })
