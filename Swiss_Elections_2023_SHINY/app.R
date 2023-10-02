@@ -132,19 +132,21 @@ ui <- fluidPage(
                tableOutput("info"),
                hr()),
       
-      tabPanel(title = "Datenübersicht",
+      tabPanel(title = "Datenübersicht/Summary",
                br(),
                br(),
                p(strong(glue("...des aktuellen Teildatensatzes:"))),
                br(),
-               dataTableOutput("summary_current_numeric"),
+               tableOutput("summary_current_numeric"),
+               br(),
                br(),
                hr(),
                br(),
                br(),
+               br(),
                p(strong("...des gesamten Datensatzes:")),
                br(),
-               dataTableOutput("summary_overall_numeric"),
+               tableOutput("summary_overall_numeric"),
                hr())
       
     ),
@@ -274,7 +276,7 @@ server <- function(input, output, session) {
                                            "Wert nicht monetärer Zuwendungen",
                                            "Monetäre Zuwendungen",
                                            "Eigenmittel")) 
-    
+      
     }
     
   })
@@ -296,7 +298,8 @@ server <- function(input, output, session) {
              "Gesamtes Kampagnenbudget (in CHF)" = einnahmen_total,
              "Welche Akteure finanzieren die Kampagne?" = akteur,
              "Wie viele Kandidierende sind Teil derselben Kampagne?" = anzahl_personen_kampagne,
-             "Welche Kandidierende sind Teil der gleichen Kampagne?" = kampagne)
+             "Welche Kandidierende sind Teil der gleichen Kampagne?" = kampagne) %>% 
+      arrange(`Name & Partei der betrachteten Person`)
     
   })
   
@@ -321,7 +324,7 @@ server <- function(input, output, session) {
                    alpha = 0.5) + 
         expand_limits(x = 0) +
         scale_x_continuous(labels = comma_format(big.mark = "`"),
-                           breaks = seq(0, 1500000, 50000)) + 
+                           breaks = seq(0, 1500000, 100000)) + 
         scale_fill_manual(values = party_colors) +
         labs(title = "\nWie viel Geld steht für die jeweilige Wahlkampagne zur Verfügung?",
              subtitle = "Aus Darstellungsgründen werden nachfolgend nur die ersten 120 Kandidierenden angezeigt.\n",
@@ -348,7 +351,7 @@ server <- function(input, output, session) {
                    alpha = 0.5) + 
         expand_limits(x = 0) +
         scale_x_continuous(labels = comma_format(big.mark = "`"),
-                           breaks = seq(0, 1500000, 50000)) + 
+                           breaks = seq(0, 1500000, 100000)) + 
         scale_fill_manual(values = party_colors) +
         labs(title = "\nWie viel Geld steht für die jeweilige Wahlkampagne zur Verfügung?\n",
              fill = "Partei:",
@@ -408,31 +411,99 @@ server <- function(input, output, session) {
   })
   
   # 2.4.1.
-  output$summary_current_numeric <- renderDataTable({
+  output$summary_current_numeric <- renderTable({
     elections_2023_reactive() %>%
       skim() %>% 
       as_tibble() %>% 
       filter(skim_type == "numeric") %>% 
-      select(-skim_type) %>% 
-      remove_empty(which = "cols") %>% 
-      mutate(across(n_missing:numeric.p100, ~round(.)))
+      select(-c(skim_type, n_missing, complete_rate)) %>% 
+      remove_empty(which = "cols") %>%
+      mutate(across(numeric.mean:numeric.p100, ~round(.)),
+             skim_variable = case_when(
+               skim_variable == "anzahl_akteure" ~ "Wie viele Akteure unterstützen die Kampagne?",
+               skim_variable == "anzahl_personen_kampagne" ~ "Anzahl Kandidierende in derselben Kampagne",
+               skim_variable == "einnahmen_total" ~ "Gesamtes Kampagnenbudget (in CHF)",
+               skim_variable == "eigenmittel" ~ "Eigenmittel (in CHF)",
+               skim_variable == "einnahmen_monetare_zuwendungen" ~ "Monetäre Zuwendungen (in CHF)",
+               skim_variable == "einnahmen_nicht_monetare_zuwendungen" ~ "Wert nicht monetärer Zuwendungen (in CHF)",
+               skim_variable == "einnahmen_veranstaltungen" ~ "Einnahmen Veranstaltungen (in CHF)",
+               skim_variable == "einnahmen_gueter_dienstleistungen" ~ "Einnahmen Güter und Dienstleistungen (in CHF)"
+             )) %>% 
+      rename("Variable" = skim_variable,
+             "Durchschnitt" = numeric.mean,
+             "Standardabweichung" = numeric.sd,
+             "Minimum" = numeric.p0,
+             "unteres Quartil" = numeric.p25,
+             "mittleres Quartil (Median)" = numeric.p50,
+             "oberes Quartil" = numeric.p75,
+             "Maximum" = numeric.p100,
+             "Histogramm" = numeric.hist)
   })
   
   # 2.4.2.
-  output$summary_overall_numeric <- renderDataTable({
+  output$summary_overall_numeric <- renderTable({
     elections_2023 %>% 
       skim() %>% 
       as_tibble() %>% 
       filter(skim_type == "numeric") %>% 
-      select(-skim_type) %>% 
-      remove_empty(which = "cols") %>% 
-      mutate(across(n_missing:numeric.p100, ~round(.)))
+      select(-c(skim_type, n_missing, complete_rate)) %>% 
+      remove_empty(which = "cols") %>%
+      mutate(across(numeric.mean:numeric.p100, ~round(.)),
+             skim_variable = case_when(
+               skim_variable == "anzahl_akteure" ~ "Wie viele Akteure unterstützen die Kampagne?",
+               skim_variable == "anzahl_personen_kampagne" ~ "Anzahl Kandidierende in derselben Kampagne",
+               skim_variable == "einnahmen_total" ~ "Gesamtes Kampagnenbudget (in CHF)",
+               skim_variable == "eigenmittel" ~ "Eigenmittel (in CHF)",
+               skim_variable == "einnahmen_monetare_zuwendungen" ~ "Monetäre Zuwendungen (in CHF)",
+               skim_variable == "einnahmen_nicht_monetare_zuwendungen" ~ "Wert nicht monetärer Zuwendungen (in CHF)",
+               skim_variable == "einnahmen_veranstaltungen" ~ "Einnahmen Veranstaltungen (in CHF)",
+               skim_variable == "einnahmen_gueter_dienstleistungen" ~ "Einnahmen Güter und Dienstleistungen (in CHF)"
+             )) %>% 
+      rename("Variable" = skim_variable,
+             "Durchschnitt" = numeric.mean,
+             "Standardabweichung" = numeric.sd,
+             "Minimum" = numeric.p0,
+             "unteres Quartil" = numeric.p25,
+             "mittleres Quartil (Median)" = numeric.p50,
+             "oberes Quartil" = numeric.p75,
+             "Maximum" = numeric.p100,
+             "Histogramm" = numeric.hist)
   })
   
   
   ###### 3. observers ###### 
   
   # 3.1.
+  observe({
+    
+    if(input$campaign_for == "Einzelperson") {
+      
+      new_party_choices <- elections_2023_single_person %>%
+        pull(partei) %>%
+        unique() %>%
+        sort()
+      
+      updateSelectInput(session,
+                        inputId = "party_name",
+                        choices = new_party_choices)
+    }
+    
+    else {
+      
+      new_party_choices <- elections_2023_groups %>%
+        pull(partei) %>%
+        unique() %>%
+        sort()
+      
+      updateSelectInput(session,
+                        inputId = "party_name",
+                        choices = new_party_choices)
+      
+    }
+    
+  })
+  
+  # 3.2.
   observe({
     
     if(input$campaign_for == "Einzelperson") {
@@ -461,36 +532,6 @@ server <- function(input, output, session) {
                            inputId = "politician_name",
                            choices = new_politician_choices,
                            server = TRUE)
-      
-    }
-    
-  })
-  
-  # 3.2
-  observe({
-    
-    if(input$campaign_for == "Einzelperson") {
-      
-      new_party_choices <- elections_2023_single_person %>%
-        pull(partei) %>%
-        unique() %>%
-        sort()
-      
-      updateSelectInput(session,
-                        inputId = "party_name",
-                        choices = new_party_choices)
-    }
-    
-    else {
-      
-      new_party_choices <- elections_2023_groups %>%
-        pull(partei) %>%
-        unique() %>%
-        sort()
-      
-      updateSelectInput(session,
-                        inputId = "party_name",
-                        choices = new_party_choices)
       
     }
     
