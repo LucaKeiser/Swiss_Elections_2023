@@ -95,19 +95,24 @@ actors_output <- tibble(
   akteur_collapsed = vector(mode = "character")
 )
 
-for(i in seq_along(df$name_choices)) {
+politicians_of_interest <- df %>% 
+  # only groups have multiple actors
+  filter(kampagne_fur == "Gruppe von Kandidierenden") %>% 
+  pull(name_choices)
+
+
+for(i in seq_along(politicians_of_interest)) {
   
   if(i %% 100 == 0) {
-    message(glue("{i}/{length(df$name_choices)}"))
+    message(glue("{i}/{length(politicians_of_interest)}"))
   }
   
   temp <- tibble(
-    name_choices = df$name_choices[i],
+    name_choices = politicians_of_interest[i],
     kampagne_fur = "Gruppe von Kandidierenden",
     akteur_collapsed = df %>% 
-      filter(# only groups have multiple actors
-        kampagne_fur == "Gruppe von Kandidierenden",
-        name_choices == df$name_choices[i]) %>% 
+      filter(name_choices == politicians_of_interest[i] & 
+             kampagne_fur == "Gruppe von Kandidierenden") %>%
       pull(akteur) %>% 
       str_c(collapse = "; ")
   )
@@ -116,26 +121,116 @@ for(i in seq_along(df$name_choices)) {
   
 }
 
+# clean up
+rm(politicians_of_interest, i, temp)
 actors_output <- actors_output %>% 
   distinct()
 
 
-### 8. merge
+### 8. recreate campaign
+campaign_output <- tibble(
+  name_choices  = vector(mode =  "character"),
+  kampagne_collapsed = vector(mode = "character")
+)
+
+politicians_of_interest <- df %>% 
+  # only groups have multiple actors
+  filter(kampagne_fur == "Gruppe von Kandidierenden") %>% 
+  pull(name_choices)
+
+
+for(i in seq_along(politicians_of_interest)) {
+  
+  if(i %% 100 == 0) {
+    message(glue("{i}/{length(politicians_of_interest)}"))
+  }
+  
+  temp <- tibble(
+    name_choices = politicians_of_interest[i],
+    kampagne_collapsed = df %>% 
+      filter(name_choices == politicians_of_interest[i] & 
+               kampagne_fur == "Gruppe von Kandidierenden") %>%
+      pull(kampagne) %>% 
+      str_c(collapse = ", ")
+  ) %>% 
+    # add "," for the last entry (this will be important later)
+    mutate(kampagne_collapsed = str_c(kampagne_collapsed, ","))
+  
+  campaign_output <- bind_rows(campaign_output, temp)
+  
+}
+
+# clean up
+rm(politicians_of_interest, i, temp)
+campaign_output <- campaign_output %>% 
+  distinct()
+
+## 8.1 delete duplicates (people can appear together in multiple campaigns...)
+campaign_output_temp <- campaign_output %>% 
+  separate_rows(kampagne_collapsed, 
+                sep = "\\),") %>%
+  mutate(kampagne_collapsed = str_squish(kampagne_collapsed)) %>% 
+  distinct(name_choices, kampagne_collapsed) %>% 
+  filter(kampagne_collapsed != "")
+
+campaign_output <- tibble(
+  name_choices = vector(mode = "character"),
+  kampagne_fur = vector(mode = "character"),
+  kampagne_collapsed = vector(mode = "character")
+)
+
+politicians_of_interest <- campaign_output_temp %>% 
+  pull(name_choices) %>% 
+  unique()
+
+for(i in seq_along(politicians_of_interest)) {
+  
+  if(i %% 100 == 0) {
+    message(glue("{i}/{length(politicians_of_interest)}"))
+  }
+  
+  temp <- tibble(
+    name_choices = politicians_of_interest[i],
+    kampagne_fur = "Gruppe von Kandidierenden",
+    kampagne_collapsed = campaign_output_temp %>% 
+      filter(name_choices == politicians_of_interest[i]) %>% 
+      pull(kampagne_collapsed) %>%  
+      sort() %>% 
+      str_c(collapse = "), ")
+  ) %>% 
+    mutate(kampagne_collapsed = str_c(kampagne_collapsed, ")"))
+  
+  campaign_output <- bind_rows(campaign_output, temp)
+  
+}
+
+# clean up
+rm(campaign_output_temp, politicians_of_interest, i, temp)
+campaign_output <- campaign_output %>% 
+  distinct()
+
+
+### 9. merge
+
+actors_output <- actors_output %>% 
+  left_join(campaign_output, 
+            by = c("name_choices", "kampagne_fur"))
+
 df <- df %>% 
   left_join(actors_output, 
             by = c("name_choices", "kampagne_fur")) %>% 
   mutate(akteur_collapsed = ifelse(is.na(akteur_collapsed),
                                    akteur, 
                                    akteur_collapsed)) %>% 
+  mutate(kampagne_collapsed = ifelse(is.na(kampagne_collapsed),
+                                     kampagne,
+                                     kampagne_collapsed)) %>% 
   distinct(name_choices, kampagne_fur, akteur_collapsed,
-           .keep_all = TRUE) %>% 
-  select(-akteur) %>% 
-  rename("akteur" = akteur_collapsed)
-
+           .keep_all = TRUE)
 
 ### 9. add number of people within one campaign
 df <- df %>% 
-  mutate(anzahl_personen_kampagne = str_count(kampagne, "\\),") + 1)
+  mutate(anzahl_personen_kampagne = str_count(kampagne_collapsed, "\\),") + 1)
 
 
 ### 10. temp name fix
@@ -176,8 +271,8 @@ df %>%
 
 # select/relocate
 df <- df %>% 
-  select(datum_des_exports, akteur, anzahl_akteure, 
-         kampagne_fur, kampagne, anzahl_personen_kampagne,
+  select(datum_des_exports, akteur_collapsed, anzahl_akteure, 
+         kampagne_fur, kampagne_collapsed, anzahl_personen_kampagne,
          name, name_choices, kanton, partei, partei_kurz,
          einnahmen_total, eigenmittel, einnahmen_monetare_zuwendungen, 
          einnahmen_nicht_monetare_zuwendungen, einnahmen_veranstaltungen,

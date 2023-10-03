@@ -160,10 +160,11 @@ ui <- fluidPage(
       
       br(),
       helpText("Die Daten wurden am 02.10.2023 aktualisiert. Siehe Webseite der Eidgenössischen Finanzkontrolle:", br(),
-               "https://politikfinanzierung.efk.admin.ch/app/de/campaign-financings.",
-               align = "left"), br(), br(),
-      helpText("Shiny-App by ©Luca Keiser",
-               align = "right")
+               "https://politikfinanzierung.efk.admin.ch/app/de/campaign-financings."),
+      helpText("In einer älteren Version wurde die Anzahl Kandidierender pro Kampagne für Gruppen falsch berechnet.", br(), 
+               "Dieser Fehler ist nun behoben."),
+      helpText("Shiny-App by ©Luca Keiser", br(),
+               "Code: https://github.com/LucaKeiser/Swiss_Elections_2023")
       
     )
     
@@ -402,17 +403,17 @@ server <- function(input, output, session) {
   output$info <- renderTable({
     
     elections_2023_reactive() %>% 
-      select(name_choices, einnahmen_total, akteur, 
-             anzahl_personen_kampagne, kampagne) %>% 
+      select(name_choices, einnahmen_total, akteur_collapsed, 
+             anzahl_personen_kampagne, kampagne_collapsed) %>% 
       mutate(einnahmen_total = format(einnahmen_total, 
                                       big.mark = "'"),
-             kampagne = str_replace_all(kampagne, "\\),", "\\);"),
+             kampagne_collapsed = str_replace_all(kampagne_collapsed, "\\),", "\\);"),
              anzahl_personen_kampagne = as.integer(anzahl_personen_kampagne)) %>% 
       rename("Name & Partei der betrachteten Person" = name_choices,
-             "Gesamtes Kampagnenbudget (in CHF)" = einnahmen_total,
-             "Welche Akteure finanzieren die Kampagne?" = akteur,
-             "Wie viele Kandidierende sind Teil derselben Kampagne?" = anzahl_personen_kampagne,
-             "Welche Kandidierende sind Teil der gleichen Kampagne?" = kampagne) %>% 
+             "Gesamtes Budget für die Kampagne(n) (in CHF)" = einnahmen_total,
+             "Welche Akteure finanzieren die Kampagne(n)?" = akteur_collapsed,
+             "Wie viele Kandidierende sind Teil derselben Kampagne(n)?" = anzahl_personen_kampagne,
+             "Welche Kandidierende sind Teil der gleichen Kampagne(n)?" = kampagne_collapsed) %>% 
       arrange(`Name & Partei der betrachteten Person`)
     
   })
@@ -432,14 +433,14 @@ server <- function(input, output, session) {
       skim() %>% 
       as_tibble() %>% 
       filter(skim_type == "numeric") %>% 
-      select(-c(skim_type, n_missing, complete_rate)) %>% 
+      select(-c(skim_type, n_missing, complete_rate, numeric.sd)) %>% 
       remove_empty(which = "cols") %>%
       mutate(across(numeric.mean:numeric.p100, ~round(.)),
              across(numeric.mean:numeric.p100, ~format(., big.mark = "'")),
              skim_variable = case_when(
-               skim_variable == "anzahl_akteure" ~ "Wie viele Akteure unterstützen die Kampagne?",
-               skim_variable == "anzahl_personen_kampagne" ~ "Anzahl Kandidierende in derselben Kampagne",
-               skim_variable == "einnahmen_total" ~ "Gesamtes Kampagnenbudget (in CHF)",
+               skim_variable == "anzahl_akteure" ~ "Wie viele Akteure unterstützen die Kampagne(n)?",
+               skim_variable == "anzahl_personen_kampagne" ~ "Wie viele Kandidierende sind Teil derselben Kampagne(n)?",
+               skim_variable == "einnahmen_total" ~ "Gesamtes Budget für die Kampagne(n) (in CHF)",
                skim_variable == "eigenmittel" ~ "Eigenmittel (in CHF)",
                skim_variable == "einnahmen_monetare_zuwendungen" ~ "Monetäre Zuwendungen (in CHF)",
                skim_variable == "einnahmen_nicht_monetare_zuwendungen" ~ "Wert nicht monetärer Zuwendungen (in CHF)",
@@ -448,7 +449,6 @@ server <- function(input, output, session) {
              )) %>% 
       rename(" " = skim_variable,
              "Durchschnitt" = numeric.mean,
-             "Standardabweichung" = numeric.sd,
              "Minimum" = numeric.p0,
              "unteres Quartil" = numeric.p25,
              "mittleres Quartil (Median)" = numeric.p50,
@@ -470,14 +470,14 @@ server <- function(input, output, session) {
       skim() %>% 
       as_tibble() %>% 
       filter(skim_type == "numeric") %>% 
-      select(-c(skim_type, n_missing, complete_rate)) %>% 
+      select(-c(skim_type, n_missing, complete_rate, numeric.sd)) %>% 
       remove_empty(which = "cols") %>%
       mutate(across(numeric.mean:numeric.p100, ~round(.)),
              across(numeric.mean:numeric.p100, ~format(., big.mark = "'")),
              skim_variable = case_when(
-               skim_variable == "anzahl_akteure" ~ "Wie viele Akteure unterstützen die Kampagne?",
-               skim_variable == "anzahl_personen_kampagne" ~ "Anzahl Kandidierende in derselben Kampagne",
-               skim_variable == "einnahmen_total" ~ "Gesamtes Kampagnenbudget (in CHF)",
+               skim_variable == "anzahl_akteure" ~ "Wie viele Akteure unterstützen die Kampagne(n)?",
+               skim_variable == "anzahl_personen_kampagne" ~ "Wie viele Kandidierende sind Teil derselben Kampagne(n)?",
+               skim_variable == "einnahmen_total" ~ "Gesamtes Budget für die Kampagne(n) (in CHF)",
                skim_variable == "eigenmittel" ~ "Eigenmittel (in CHF)",
                skim_variable == "einnahmen_monetare_zuwendungen" ~ "Monetäre Zuwendungen (in CHF)",
                skim_variable == "einnahmen_nicht_monetare_zuwendungen" ~ "Wert nicht monetärer Zuwendungen (in CHF)",
@@ -486,7 +486,6 @@ server <- function(input, output, session) {
              )) %>% 
       rename(" " = skim_variable,
              "Durchschnitt" = numeric.mean,
-             "Standardabweichung" = numeric.sd,
              "Minimum" = numeric.p0,
              "unteres Quartil" = numeric.p25,
              "mittleres Quartil (Median)" = numeric.p50,
