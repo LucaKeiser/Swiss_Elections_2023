@@ -109,59 +109,66 @@ ui <- fluidPage(
     
     
     ###### 2. MAIN PANEL ###### 
+    mainPanel(
+      
+      tabsetPanel(
+        
+        type = "pills",
+        
+        # plots
+        tabPanel(title = "Grafiken",
+                 br(),
+                 fluidRow(column(plotOutput("absolut_plot",
+                                            height = "1500px"), 
+                                 width = 12)),
+                 hr(),
+                 fluidRow(column(plotOutput("percent_plot",
+                                            height = "1500px"), 
+                                 width = 12)),
+                 hr()),
+        
+        # further information
+        tabPanel(title = "Weitere Informationen zu den Kampagnen",
+                 br(),
+                 tableOutput("info"),
+                 hr()),
+        
+        tabPanel(title = "Datenübersicht/Summary",
+                 br(),
+                 br(),
+                 p(strong(glue("...des aktuellen Teildatensatzes:"))),
+                 br(),
+                 textOutput("summary_current_text"),
+                 br(),
+                 tableOutput("summary_current_numeric"),
+                 br(),
+                 br(),
+                 hr(),
+                 br(),
+                 br(),
+                 br(),
+                 p(strong("...des gesamten Datensatzes:")),
+                 br(),
+                 textOutput("summary_overall_text"),
+                 br(),
+                 tableOutput("summary_overall_numeric"),
+                 hr())
+        
+      ),
+      
+      ###### 3. caption ###### 
+      
+      br(),
+      helpText("Die Daten wurden am 02.10.2023 aktualisiert. Siehe Webseite der Eidgenössischen Finanzkontrolle:", br(),
+               "https://politikfinanzierung.efk.admin.ch/app/de/campaign-financings.",
+               align = "left"), br(), br(),
+      helpText("Shiny-App by ©Luca Keiser",
+               align = "right")
+      
+    )
     
-    tabsetPanel(
-      
-      type = "pills",
-      
-      # plots
-      tabPanel(title = "Grafiken",
-               br(),
-               plotOutput("absolut_plot",
-                          height = "1500px",
-                          width = "75%"),
-               hr(),
-               plotOutput("percent_plot",
-                          height = "1500px",
-                          width = "75%"),
-               hr()),
-      
-      # further information
-      tabPanel(title = "Weitere Informationen zu den Kampagnen",
-               br(),
-               tableOutput("info"),
-               hr()),
-      
-      tabPanel(title = "Datenübersicht/Summary",
-               br(),
-               br(),
-               p(strong(glue("...des aktuellen Teildatensatzes:"))),
-               br(),
-               tableOutput("summary_current_numeric"),
-               br(),
-               br(),
-               hr(),
-               br(),
-               br(),
-               br(),
-               p(strong("...des gesamten Datensatzes:")),
-               br(),
-               tableOutput("summary_overall_numeric"),
-               hr())
-      
-    ),
-    
-  ),
+  )
   
-  
-  ###### 3. caption ###### 
-  
-  br(),
-  helpText("Die Daten wurden am 02.10.2023 aktualisiert. Siehe Webseite der Eidgenössischen Finanzkontrolle:", br(),
-           "https://politikfinanzierung.efk.admin.ch/app/de/campaign-financings.",
-           align = "left"), br(), br(),
-  helpText("Shiny-App by ©Luca Keiser",
-           align = "right")
 )
 
 
@@ -285,27 +292,7 @@ server <- function(input, output, session) {
   
   ###### 2. outputs ###### 
   
-  # 2.1. info
-  output$info <- renderTable({
-    
-    elections_2023_reactive() %>% 
-      select(name_choices, einnahmen_total, akteur, 
-             anzahl_personen_kampagne, kampagne) %>% 
-      mutate(einnahmen_total = format(einnahmen_total, 
-                                      big.mark = "`"),
-             kampagne = str_replace_all(kampagne, "\\),", "\\);"),
-             anzahl_personen_kampagne = as.integer(anzahl_personen_kampagne)) %>% 
-      rename("Name & Partei der betrachteten Person" = name_choices,
-             "Gesamtes Kampagnenbudget (in CHF)" = einnahmen_total,
-             "Welche Akteure finanzieren die Kampagne?" = akteur,
-             "Wie viele Kandidierende sind Teil derselben Kampagne?" = anzahl_personen_kampagne,
-             "Welche Kandidierende sind Teil der gleichen Kampagne?" = kampagne) %>% 
-      arrange(`Name & Partei der betrachteten Person`)
-    
-  })
-  
-  
-  # 2.2. absolut_plot
+  # 2.1. absolut_plot
   output$absolut_plot <- renderPlot({
     
     if(nrow(elections_2023_reactive()) > 120) {
@@ -324,17 +311,16 @@ server <- function(input, output, session) {
                    linewidth = 1.1,
                    alpha = 0.5) + 
         expand_limits(x = 0) +
-        scale_x_continuous(labels = comma_format(big.mark = "`"),
-                           breaks = seq(0, 1500000, 100000)) + 
+        scale_x_continuous(labels = comma_format(big.mark = "'")) + 
         scale_fill_manual(values = party_colors) +
         labs(title = "\nWie viel Geld steht für die jeweilige Wahlkampagne zur Verfügung?",
              subtitle = "Aus Darstellungsgründen werden nachfolgend nur die ersten 120 Kandidierenden angezeigt.\n",
              fill = "Partei:",
              x = "\nMenge an zur Verfügung stehendem Geld in CHF\n",
              y = "",
-             caption = glue("Gestrichelte Linie: Medianwert aller (Einzelpersonen & Gruppen) NR-Kandidierenden ({format(median(elections_2023$einnahmen_total), big.mark = '`')} CHF)\nDurchgezogene Linie: Durchschnittswert aller (Einzelpersonen & Gruppen) NR-Kandidierenden ({format(round(mean(elections_2023$einnahmen_total)), big.mark = '`')} CHF)")) +
+             caption = glue("Gestrichelte Linie: Medianwert aller (Einzelpersonen & Gruppen) NR-Kandidierenden ({format(median(elections_2023$einnahmen_total), big.mark = '\\'')} CHF)\nDurchgezogene Linie: Durchschnittswert aller (Einzelpersonen & Gruppen) NR-Kandidierenden ({format(round(mean(elections_2023$einnahmen_total)), big.mark = '\\'')} CHF)")) +
         theme(legend.position = "top",
-              text = element_text(size = 15))
+              text = element_text(size = 13.5))
       
     } else {
       
@@ -351,22 +337,21 @@ server <- function(input, output, session) {
                    linewidth = 1.1,
                    alpha = 0.5) + 
         expand_limits(x = 0) +
-        scale_x_continuous(labels = comma_format(big.mark = "`"),
-                           breaks = seq(0, 1500000, 100000)) + 
+        scale_x_continuous(labels = comma_format(big.mark = "'")) +
         scale_fill_manual(values = party_colors) +
         labs(title = "\nWie viel Geld steht für die jeweilige Wahlkampagne zur Verfügung?\n",
              fill = "Partei:",
              x = "\nMenge an zur Verfügung stehendem Geld in CHF\n",
              y = "",
-             caption = glue("Gestrichelte Linie: Medianwert aller (Einzelpersonen & Gruppen) NR-Kandidierenden ({format(median(elections_2023$einnahmen_total), big.mark = '`')} CHF)\nDurchgezogene Linie: Durchschnittswert aller (Einzelpersonen & Gruppen) NR-Kandidierenden ({format(round(mean(elections_2023$einnahmen_total)), big.mark = '`')} CHF)")) +
+             caption = glue("Gestrichelte Linie: Medianwert aller (Einzelpersonen & Gruppen) NR-Kandidierenden ({format(median(elections_2023$einnahmen_total), big.mark = '\\'')} CHF)\nDurchgezogene Linie: Durchschnittswert aller (Einzelpersonen & Gruppen) NR-Kandidierenden ({format(round(mean(elections_2023$einnahmen_total)), big.mark = '\\'')} CHF)")) +
         theme(legend.position = "top",
-              text = element_text(size = 15))
+              text = element_text(size = 13.5))
       
     }
     
   })
   
-  # 2.3. percent_plot
+  # 2.2. percent_plot
   output$percent_plot <- renderPlot({
     
     
@@ -385,7 +370,7 @@ server <- function(input, output, session) {
              y = "",
              fill = "") +
         theme(legend.position = "top",
-              text = element_text(size = 15)) +
+              text = element_text(size = 13.5)) +
         guides(fill = guide_legend(reverse = TRUE,
                                    ncol = 1))
       
@@ -403,7 +388,7 @@ server <- function(input, output, session) {
              y = "",
              fill = "") +
         theme(legend.position = "top",
-              text = element_text(size = 15)) +
+              text = element_text(size = 13.5)) +
         guides(fill = guide_legend(reverse = TRUE,
                                    ncol = 1))      
       
@@ -411,7 +396,36 @@ server <- function(input, output, session) {
     
   })
   
-  # 2.4.1.
+  
+  # 2.3. info
+  output$info <- renderTable({
+    
+    elections_2023_reactive() %>% 
+      select(name_choices, einnahmen_total, akteur, 
+             anzahl_personen_kampagne, kampagne) %>% 
+      mutate(einnahmen_total = format(einnahmen_total, 
+                                      big.mark = "'"),
+             kampagne = str_replace_all(kampagne, "\\),", "\\);"),
+             anzahl_personen_kampagne = as.integer(anzahl_personen_kampagne)) %>% 
+      rename("Name & Partei der betrachteten Person" = name_choices,
+             "Gesamtes Kampagnenbudget (in CHF)" = einnahmen_total,
+             "Welche Akteure finanzieren die Kampagne?" = akteur,
+             "Wie viele Kandidierende sind Teil derselben Kampagne?" = anzahl_personen_kampagne,
+             "Welche Kandidierende sind Teil der gleichen Kampagne?" = kampagne) %>% 
+      arrange(`Name & Partei der betrachteten Person`)
+    
+  })
+  
+  
+  # 2.4. data summary
+  
+  # 2.4.1
+  output$summary_current_text <- renderText({
+    
+    glue("Es befinden sich {nrow(elections_2023_reactive())} Kandidierende im aktuellen Teildatensatz.")
+    
+  })
+  
   output$summary_current_numeric <- renderTable({
     elections_2023_reactive() %>%
       skim() %>% 
@@ -420,6 +434,7 @@ server <- function(input, output, session) {
       select(-c(skim_type, n_missing, complete_rate)) %>% 
       remove_empty(which = "cols") %>%
       mutate(across(numeric.mean:numeric.p100, ~round(.)),
+             across(numeric.mean:numeric.p100, ~format(., big.mark = "'")),
              skim_variable = case_when(
                skim_variable == "anzahl_akteure" ~ "Wie viele Akteure unterstützen die Kampagne?",
                skim_variable == "anzahl_personen_kampagne" ~ "Anzahl Kandidierende in derselben Kampagne",
@@ -430,7 +445,7 @@ server <- function(input, output, session) {
                skim_variable == "einnahmen_veranstaltungen" ~ "Einnahmen Veranstaltungen (in CHF)",
                skim_variable == "einnahmen_gueter_dienstleistungen" ~ "Einnahmen Güter und Dienstleistungen (in CHF)"
              )) %>% 
-      rename("Variable" = skim_variable,
+      rename(" " = skim_variable,
              "Durchschnitt" = numeric.mean,
              "Standardabweichung" = numeric.sd,
              "Minimum" = numeric.p0,
@@ -442,6 +457,13 @@ server <- function(input, output, session) {
   })
   
   # 2.4.2.
+  output$summary_overall_text <- renderText({
+    
+    glue("Insgesamt befinden sich {nrow(elections_2023)} Kandidierende im gesamten Datensatz.")
+    
+  })
+  
+  
   output$summary_overall_numeric <- renderTable({
     elections_2023 %>% 
       skim() %>% 
@@ -450,6 +472,7 @@ server <- function(input, output, session) {
       select(-c(skim_type, n_missing, complete_rate)) %>% 
       remove_empty(which = "cols") %>%
       mutate(across(numeric.mean:numeric.p100, ~round(.)),
+             across(numeric.mean:numeric.p100, ~format(., big.mark = "'")),
              skim_variable = case_when(
                skim_variable == "anzahl_akteure" ~ "Wie viele Akteure unterstützen die Kampagne?",
                skim_variable == "anzahl_personen_kampagne" ~ "Anzahl Kandidierende in derselben Kampagne",
@@ -460,7 +483,7 @@ server <- function(input, output, session) {
                skim_variable == "einnahmen_veranstaltungen" ~ "Einnahmen Veranstaltungen (in CHF)",
                skim_variable == "einnahmen_gueter_dienstleistungen" ~ "Einnahmen Güter und Dienstleistungen (in CHF)"
              )) %>% 
-      rename("Variable" = skim_variable,
+      rename(" " = skim_variable,
              "Durchschnitt" = numeric.mean,
              "Standardabweichung" = numeric.sd,
              "Minimum" = numeric.p0,
