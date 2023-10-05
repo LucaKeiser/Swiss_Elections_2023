@@ -1,6 +1,6 @@
 # Nationalratswahlen Schweiz (2023)
 
-In diesem Repository befindet der Code, welcher für die Aufbereitugn der Daten sowie den Betrieb dieser [Shiny-Webapplikation](https://lucakeiser.shinyapps.io/Swiss_Elections_2023/) benötigt wird.
+In diesem Repository befindet der Code, welcher für die Aufbereitung der Daten sowie den Betrieb dieser [Shiny-Webapplikation](https://lucakeiser.shinyapps.io/Swiss_Elections_2023/) benötigt wird.
 
 Die App erlaubt eine (vergleichende) Darstellung der finanziellen Mittel, welche für die jeweilige Nationalratswahlkampagne eingesetzt werden können.
 
@@ -25,4 +25,6 @@ Die Daten wurden vom der [*Webseite der Eidgenössischen Finanzkontrolle*](https
 
 Weitere Informationen finden Sie [**hier**](https://www.linkedin.com/posts/luca-keiser-806329285_kampagnenfinanzierung-nationalratswahlen-activity-7114897040437846017-bY9L?utm_source=share&utm_medium=member_desktop) und [**hier**](https://www.linkedin.com/posts/luca-keiser-806329285_update-shiny-app-kampagnenfinanzierung-activity-7115663181162668033-s6C1?utm_source=share&utm_medium=member_desktop). 
 
-*©[Luca Keiser](https://www.linkedin.com/in/luca-keiser-806329285/) 2023*
+*©[Luca Keiser](https://www.linkedin.com/in/luca-keiser-806329285/) | Oktober, 2023*
+
+
