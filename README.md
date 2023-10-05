@@ -12,11 +12,11 @@ Die App erlaubt eine (vergleichende) Darstellung der finanziellen Mittel, welche
 
 ### Beispielbilder:
 
-![alt text](https://github.com/LucaKeiser/Swiss_Elections_2023/blob/master/Example_Pictures/absolut_plot_example.jpeg?raw=true)
+![alt text](https://github.com/LucaKeiser/Swiss_Elections_2023/blob/master/04_Example_Pictures/absolut_plot_example.jpeg?raw=true)
 
-![alt text](https://github.com/LucaKeiser/Swiss_Elections_2023/blob/master/Example_Pictures/percent_plot_example.jpeg?raw=true)
+![alt text](https://github.com/LucaKeiser/Swiss_Elections_2023/blob/master/04_Example_Pictures/percent_plot_example.jpeg?raw=true)
 
-![alt text](https://github.com/LucaKeiser/Swiss_Elections_2023/blob/master/Example_Pictures/network_plot_example.jpeg?raw=true)
+![alt text](https://github.com/LucaKeiser/Swiss_Elections_2023/blob/master/04_Example_Pictures/network_plot_example.jpeg?raw=true)
 
 
 ### Quelle und weitere Hinweise
