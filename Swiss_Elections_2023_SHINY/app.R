@@ -13,6 +13,7 @@ library(scales)
 library(skimr)
 library(janitor)
 library(glue)
+library(shinycssloaders)
 
 theme_set(theme_minimal())
 
@@ -125,25 +126,29 @@ ui <- fluidPage(
         tabPanel(title = "Balkendiagramme",
                  br(),
                  fluidRow(column(plotOutput("absolut_plot",
-                                            height = "1500px"), 
+                                            height = "1500px") %>% 
+                                   withSpinner(), 
                                  width = 12)),
                  hr(),
                  fluidRow(column(plotOutput("percent_plot",
-                                            height = "1500px"), 
+                                            height = "1500px") %>% 
+                                   withSpinner(),
                                  width = 12)),
                  hr()),
         
         # further information
         tabPanel(title = "Weitere Informationen zu den Kampagnen",
                  br(),
-                 tableOutput("info"),
+                 tableOutput("info") %>% 
+                   withSpinner(),
                  hr()),
         
         # network plot
         tabPanel(title = "Netzwerkgrafik",
                  br(),
                  fluidRow(column(plotOutput("network_plot",
-                                            height = "1000px"),
+                                            height = "1000px") %>% 
+                                   withSpinner(),
                                  width = 12))),
         
         # summary
@@ -154,7 +159,8 @@ ui <- fluidPage(
                  br(),
                  textOutput("summary_current_text"),
                  br(),
-                 tableOutput("summary_current_numeric"),
+                 tableOutput("summary_current_numeric")%>% 
+                   withSpinner(),
                  br(),
                  br(),
                  hr(),
