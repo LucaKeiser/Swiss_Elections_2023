@@ -10,6 +10,6 @@ Die App erlaubt eine (vergleichende) Darstellung der finanziellen Mittel, welche
 
 Die Daten wurden vom der [*Webseite der Eidgenössischen Finanzkontrolle*](https://politikfinanzierung.efk.admin.ch/app/de/campaign-financings) bezogen und sind öffentlich zugänglich.
 
-Weitere Informationen finden Sie [**hier**](https://www.linkedin.com/posts/luca-keiser-806329285_kampagnenfinanzierung-nationalratswahlen-activity-7114897040437846017-bY9L?utm_source=share&utm_medium=member_desktop). 
+Weitere Informationen finden Sie [**hier**](https://www.linkedin.com/posts/luca-keiser-806329285_kampagnenfinanzierung-nationalratswahlen-activity-7114897040437846017-bY9L?utm_source=share&utm_medium=member_desktop) und [**hier**](https://www.linkedin.com/posts/luca-keiser-806329285_update-shiny-app-kampagnenfinanzierung-activity-7115663181162668033-s6C1?utm_source=share&utm_medium=member_desktop). 
 
-*©[Luca Keiser](www.linkedin.com/in/luca-keiser-806329285) 2023*
+*©[Luca Keiser](https://www.linkedin.com/in/luca-keiser-806329285/) 2023*
