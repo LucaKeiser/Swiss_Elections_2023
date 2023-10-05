@@ -18,7 +18,7 @@ df %>%
   geom_line(color = "seagreen",
             linewidth = 2,
             alpha = 0.75) + 
-  scale_y_continuous(breaks = seq(0, max(df$connect_count_total), 100)) +
+  scale_y_continuous(breaks = seq(0, max(df$connect_count_total) + 100, 100)) +
   labs(title =  "Shiny-App-Benutzung",
        x = "Zeit",
        y = "Anzahl Verbindungen (Total)")
