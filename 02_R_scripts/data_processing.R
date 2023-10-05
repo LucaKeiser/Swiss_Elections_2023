@@ -6,7 +6,7 @@ library(tidyverse)
 library(glue)
 
 # data
-df <- readxl::read_xlsx(here::here("Data",
+df <- readxl::read_xlsx(here::here("01_Data",
                                    "2023_10_22_Nationalratswahlen_2023_Budgetierte_Einnahmen_und_Zuwendungen.xlsx")) %>% 
   janitor::clean_names()
 
@@ -293,5 +293,5 @@ View(df)
 
 # save
 write_rds(x = df,
-          file = here::here("Swiss_Elections_2023_SHINY",
+          file = here::here("03_Swiss_Elections_2023_SHINY",
                             "swiss_elections_2023.rds"))

@@ -15,7 +15,7 @@ theme_set(theme_void())
 
 
 # data
-df <- readxl::read_xlsx(here::here("Data",
+df <- readxl::read_xlsx(here::here("01_Data",
                                    "2023_10_22_Nationalratswahlen_2023_Budgetierte_Einnahmen_und_Zuwendungen.xlsx")) %>% 
   janitor::clean_names()
 
@@ -217,5 +217,5 @@ network_plot <- network %>%
 
 # save --------------------------------------------------------------------
 write_rds(x = network_plot,
-          file = here::here("Swiss_Elections_2023_SHINY",
+          file = here::here("03_Swiss_Elections_2023_SHINY",
                             "swiss_elections_2023_network_plot.rds"))
