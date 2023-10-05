@@ -230,7 +230,17 @@ df <- df %>%
 
 ### 9. add number of people within one campaign
 df <- df %>% 
-  mutate(anzahl_personen_kampagne = str_count(kampagne_collapsed, "\\),") + 1)
+  mutate(anzahl_personen_kampagne = str_count(kampagne_collapsed, "\\),") + 1,
+         kampagne_collapsed = str_replace_all(kampagne_collapsed, "\\),", "\\);"),
+         kampagne_collapsed = str_replace_all(kampagne_collapsed, "Schweizerische Volkspartei", "SVP"), 
+         kampagne_collapsed = str_replace_all(kampagne_collapsed, "FDP.Die Liberalen", "FDP"),
+         kampagne_collapsed = str_replace_all(kampagne_collapsed, "Sozialdemokratische Partei der Schweiz", "SP"),
+         kampagne_collapsed = str_replace_all(kampagne_collapsed, "Eidgenössisch-Demokratische Union ", "EDU"),
+         kampagne_collapsed = str_replace_all(kampagne_collapsed, "Evangelische Volkspartei der Schweiz", "EVP"),
+         kampagne_collapsed = str_replace_all(kampagne_collapsed, "GRÜNE Schweiz", "Grüne"),
+         kampagne_collapsed = str_replace_all(kampagne_collapsed, "Grünliberale Partei", "GLP"),
+         kampagne_collapsed = str_replace_all(kampagne_collapsed, "Lega dei Ticinesi", "Lega"),
+         kampagne_collapsed = str_replace_all(kampagne_collapsed, "Übrige politische Parteien", "Übrige"))
 
 
 ### 10. temp name fix

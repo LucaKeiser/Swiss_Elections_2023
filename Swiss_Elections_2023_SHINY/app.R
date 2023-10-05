@@ -5,6 +5,10 @@
 library(shiny)
 library(shinythemes)
 library(tidyverse)
+library(tidygraph) 
+library(ggraph) 
+library(igraph) 
+library(ggrepel)
 library(scales)
 library(skimr)
 library(janitor)
@@ -20,6 +24,9 @@ elections_2023_single_person <- elections_2023 %>%
 
 elections_2023_groups <- elections_2023 %>% 
   filter(kampagne_fur == "Gruppe von Kandidierenden")
+
+# network-object
+network_plot <- read_rds(here::here("swiss_elections_2023_network_plot.rds"))
 
 
 # define party colors
@@ -114,8 +121,8 @@ ui <- fluidPage(
         
         type = "pills",
         
-        # plots
-        tabPanel(title = "Grafiken",
+        # bar charts
+        tabPanel(title = "Balkendiagramme",
                  br(),
                  fluidRow(column(plotOutput("absolut_plot",
                                             height = "1500px"), 
@@ -132,6 +139,14 @@ ui <- fluidPage(
                  tableOutput("info"),
                  hr()),
         
+        # network plot
+        tabPanel(title = "Netzwerkgrafik",
+                 br(),
+                 fluidRow(column(plotOutput("network_plot",
+                                            height = "1000px"),
+                                 width = 12))),
+        
+        # summary
         tabPanel(title = "Datenübersicht/Summary",
                  br(),
                  br(),
@@ -160,8 +175,6 @@ ui <- fluidPage(
       br(),
       helpText("Die Daten wurden am 02.10.2023 aktualisiert. Siehe Webseite der Eidgenössischen Finanzkontrolle:", br(),
                "https://politikfinanzierung.efk.admin.ch/app/de/campaign-financings."),
-      helpText("In einer älteren Version wurde die Anzahl Kandidierender pro Kampagne für Gruppen falsch berechnet.", br(), 
-               "Dieser Fehler ist nun behoben."),
       helpText("Shiny-App by ©Luca Keiser", br(),
                "Code: https://github.com/LucaKeiser/Swiss_Elections_2023")
       
@@ -406,16 +419,6 @@ server <- function(input, output, session) {
              anzahl_personen_kampagne, kampagne_collapsed) %>% 
       mutate(einnahmen_total = format(einnahmen_total, 
                                       big.mark = "'"),
-             kampagne_collapsed = str_replace_all(kampagne_collapsed, "\\),", "\\);"),
-             kampagne_collapsed = str_replace_all(kampagne_collapsed, "Schweizerische Volkspartei", "SVP"), 
-             kampagne_collapsed = str_replace_all(kampagne_collapsed, "FDP.Die Liberalen", "FDP"),
-             kampagne_collapsed = str_replace_all(kampagne_collapsed, "Sozialdemokratische Partei der Schweiz", "SP"),
-             kampagne_collapsed = str_replace_all(kampagne_collapsed, "Eidgenössisch-Demokratische Union ", "EDU"),
-             kampagne_collapsed = str_replace_all(kampagne_collapsed, "Evangelische Volkspartei der Schweiz", "EVP"),
-             kampagne_collapsed = str_replace_all(kampagne_collapsed, "GRÜNE Schweiz", "Grüne"),
-             kampagne_collapsed = str_replace_all(kampagne_collapsed, "Grünliberale Partei", "GLP"),
-             kampagne_collapsed = str_replace_all(kampagne_collapsed, "Lega dei Ticinesi", "Lega"),
-             kampagne_collapsed = str_replace_all(kampagne_collapsed, "Übrige politische Parteien", "Übrige"),
              anzahl_personen_kampagne = as.integer(anzahl_personen_kampagne)) %>% 
       rename("Name & Partei der betrachteten Person" = name_choices,
              "Gesamtes Budget für die Kampagne(n) (in CHF)" = einnahmen_total,
@@ -427,9 +430,19 @@ server <- function(input, output, session) {
   })
   
   
-  # 2.4. data summary
+  # 2.4. network_plot
+  output$network_plot <- renderPlot({
+    
+    suppressWarnings(
+      network_plot
+    )
+    
+  })
   
-  # 2.4.1
+  
+  # 2.5. data summary
+  
+  # 2.5.1
   output$summary_current_text <- renderText({
     
     glue("Es befinden sich {nrow(elections_2023_reactive())} Kandidierende im aktuellen Teildatensatz.")
@@ -465,7 +478,7 @@ server <- function(input, output, session) {
              "Histogramm" = numeric.hist)
   })
   
-  # 2.4.2.
+  # 2.5.2.
   output$summary_overall_text <- renderText({
     
     glue("Insgesamt befinden sich {nrow(elections_2023)} Kandidierende im gesamten Datensatz.")
