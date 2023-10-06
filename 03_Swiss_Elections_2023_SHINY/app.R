@@ -82,6 +82,8 @@ ui <- fluidPage(
     
     sidebarPanel(
       
+      p(strong("Bitte auswählen und 'Ergebnisse Anzeigen!' klicken")),
+      
       selectInput(inputId = "campaign_for",
                   label = "Kampagne für:",
                   choices = sort(unique(elections_2023$kampagne_fur)),
@@ -104,13 +106,15 @@ ui <- fluidPage(
                    label = "Ergebnisse Anzeigen!"),
       
       br(),
-      br(),
+      hr(),
       
       p(strong("Hinweis 1:"), "Damit Politiker*innen im Dropdown-Menü angezeigt werden, wählen Sie bitte zuerst die entsprechende(n) Partei(en) aus.", br(),
         strong("Hinweis 2:"), "Sie können auch lediglich eine Partei anwählen. Dann werden sämtliche Kandidierende (max. 100) der entsprechenden Partei angezeigt.", br(),
         strong("Hinweis 3:"), "Wird nichts angewählt und auf 'Ergebnisse Anzeigen!' geklickt, werden sämltiche Kandidierende (max. 100) im jweiligen Datensatz dargestellt.", br(),
         strong("Hinweis 4:"), "Der Gesamtbetrag bei 'Gruppe von Kandidierenden' kommt der Gesamtgruppe und nicht einer einzelnen Person zu (siehe 'Weitere Informationen zu den Kampagnen').", br(),
-        strong("Hinweis 5:"), "Verwenden Sie bei der Benutzung mit dem Mobiltelefon bitte das Querformat (Verwendung am Computer empfohlen).")
+        strong("Hinweis 5:"), "Verwenden Sie bei der Benutzung mit dem Mobiltelefon bitte das Querformat (Verwendung am Computer empfohlen)."),
+      
+      hr()
       
     ),
     
@@ -126,12 +130,12 @@ ui <- fluidPage(
         tabPanel(title = "Balkendiagramme",
                  br(),
                  fluidRow(column(plotOutput("absolut_plot",
-                                            height = "1500px") %>% 
+                                            height = "1250px") %>% 
                                    withSpinner(), 
                                  width = 12)),
                  hr(),
                  fluidRow(column(plotOutput("percent_plot",
-                                            height = "1500px") %>% 
+                                            height = "1250px") %>% 
                                    withSpinner(),
                                  width = 12)),
                  hr()),
@@ -181,7 +185,7 @@ ui <- fluidPage(
       br(),
       helpText("Die Daten wurden am 02.10.2023 aktualisiert. Siehe Webseite der Eidgenössischen Finanzkontrolle:", br(),
                "https://politikfinanzierung.efk.admin.ch/app/de/campaign-financings."),
-      helpText("Shiny-App by ©Luca Keiser", br(),
+      helpText("Shiny-App by ©Luca Keiser | Oktober, 2023", br(),
                "Code: https://github.com/LucaKeiser/Swiss_Elections_2023")
       
     )
