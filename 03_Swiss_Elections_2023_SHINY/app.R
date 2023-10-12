@@ -383,7 +383,7 @@ server <- function(input, output, session) {
     
     
     if((input$campaign_for == "Einzelperson" & nrow(percent_plot()) > 500) | 
-      (input$campaign_for == "Gruppe von Kandidierenden" & nrow(percent_plot()) > 500)) {
+       (input$campaign_for == "Gruppe von Kandidierenden" & nrow(percent_plot()) > 500)) {
       
       percent_plot() %>%
         mutate(name = fct_reorder(name, einnahmen_total)) %>%
