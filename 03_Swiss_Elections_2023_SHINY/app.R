@@ -72,6 +72,12 @@ ui <- fluidPage(
     windowTitle = "Nationalratswahlen Schweiz 2023",
     title = p(strong("Nationalratswahlen in der Schweiz (2023)"), br(), "Kampagnenbudgets - Einzelpersonen & Gruppen von Kandidierenden")),
   
+  hr(),
+  
+  p(strong("Haben Sie schon die Web-App zum Wähler*innenanteil von 1971 bis 2019 gesehen?"), br(), "https://lucakeiser.shinyapps.io/Swiss_Elections_Over_Time/"),
+  
+  hr(),
+  
   br(),
   br(),
   
@@ -109,10 +115,8 @@ ui <- fluidPage(
       hr(),
       
       p(strong("Hinweis 1:"), "Damit Politiker*innen im Dropdown-Menü angezeigt werden, wählen Sie bitte zuerst die entsprechende(n) Partei(en) aus.", br(),
-        strong("Hinweis 2:"), "Sie können auch lediglich eine Partei anwählen. Dann werden sämtliche Kandidierende (max. 100) der entsprechenden Partei angezeigt.", br(),
-        strong("Hinweis 3:"), "Wird nichts angewählt und auf 'Ergebnisse Anzeigen!' geklickt, werden sämltiche Kandidierende (max. 100) im jweiligen Datensatz dargestellt.", br(),
-        strong("Hinweis 4:"), "Der Gesamtbetrag bei 'Gruppe von Kandidierenden' kommt der Gesamtgruppe und nicht einer einzelnen Person zu (siehe 'Weitere Informationen zu den Kampagnen').", br(),
-        strong("Hinweis 5:"), "Verwenden Sie bei der Benutzung mit dem Mobiltelefon bitte das Querformat (Verwendung am Computer empfohlen)."),
+        strong("Hinweis 2:"), "Der Gesamtbetrag bei 'Gruppe von Kandidierenden' kommt der Gesamtgruppe und nicht einer einzelnen Person zu (siehe 'Weitere Informationen zu den Kampagnen').", br(),
+        strong("Hinweis 3:"), "Verwenden Sie bei der Benutzung mit dem Mobiltelefon bitte das Querformat (Verwendung am Computer empfohlen)."),
       
       hr()
       
@@ -184,7 +188,7 @@ ui <- fluidPage(
       
       br(),
       helpText("Die Daten wurden am 02.10.2023 aktualisiert. Siehe Webseite der Eidgenössischen Finanzkontrolle:", br(),
-               "https://politikfinanzierung.efk.admin.ch/app/de/campaign-financings."),
+               "https://politikfinanzierung.efk.admin.ch/app/de/campaign-financings"),
       helpText("Shiny-App by ©Luca Keiser | Oktober, 2023", br(),
                "Code: https://github.com/LucaKeiser/Swiss_Elections_2023")
       
