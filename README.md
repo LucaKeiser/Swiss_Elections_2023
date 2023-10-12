@@ -1,4 +1,4 @@
-# Nationalratswahlen Schweiz (2023)
+# Nationalratswahlen Schweiz (2023) | Kampagnenbudgets
 
 In diesem Repository befindet der Code, welcher für die Aufbereitung der Daten sowie den Betrieb dieser [Shiny-Webapplikation](https://lucakeiser.shinyapps.io/Swiss_Elections_2023/) benötigt wird.
 
