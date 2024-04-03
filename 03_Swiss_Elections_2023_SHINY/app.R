@@ -72,11 +72,6 @@ ui <- fluidPage(
     windowTitle = "Nationalratswahlen Schweiz 2023",
     title = p(strong("Nationalratswahlen in der Schweiz (2023)"), br(), "Kampagnenbudgets - Einzelpersonen & Gruppen von Kandidierenden")),
   
-  hr(),
-  
-  p(strong("Haben Sie schon die Web-App zum Wähler*innenanteil von 1971 bis 2019 gesehen?"), br(), "https://lucakeiser.shinyapps.io/Swiss_Elections_Over_Time/"),
-  
-  hr(),
   
   br(),
   br(),
@@ -115,8 +110,9 @@ ui <- fluidPage(
       hr(),
       
       p(strong("Hinweis 1:"), "Damit Politiker*innen im Dropdown-Menü angezeigt werden, wählen Sie bitte zuerst die entsprechende(n) Partei(en) aus.", br(),
-        strong("Hinweis 2:"), "Der Gesamtbetrag bei 'Gruppe von Kandidierenden' kommt der Gesamtgruppe und nicht einer einzelnen Person zu (siehe 'Weitere Informationen zu den Kampagnen').", br(),
-        strong("Hinweis 3:"), "Verwenden Sie bei der Benutzung mit dem Mobiltelefon bitte das Querformat (Verwendung am Computer empfohlen)."),
+        strong("Hinweis 2:"), "Es können mehrere Politiker*innen von verschiedenen Parteien dargestellt werden. Erst dann wirds spannend...", br(),
+        strong("Hinweis 3:"), "Der Gesamtbetrag bei 'Gruppe von Kandidierenden' kommt der Gesamtgruppe und nicht einer einzelnen Person zu (siehe 'Weitere Informationen zu den Kampagnen').", br(),
+        strong("Hinweis 4:"), "Verwenden Sie bei der Benutzung mit dem Mobiltelefon bitte das Querformat (Verwendung am Computer empfohlen)."),
       
       hr()
       

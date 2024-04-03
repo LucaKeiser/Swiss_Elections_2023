@@ -209,7 +209,7 @@ network_plot <- network %>%
         text = element_text(size = 13.5))
 
 # take a look
-  network_plot  
+network_plot  
 
 
 
